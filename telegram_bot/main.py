@@ -1,6 +1,8 @@
 import os
 import sys
 import logging
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 
 # Setup path so we can import backend packages
@@ -28,11 +30,31 @@ logger = logging.getLogger(__name__)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
+# --- Health Check Server (keeps Render free tier alive) ---
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"Bot is running!")
+    def log_message(self, format, *args):
+        pass  # Suppress noisy HTTP logs
+
+def start_health_server():
+    port = int(os.getenv("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), HealthCheckHandler)
+    logger.info(f"Health check server running on port {port}")
+    server.serve_forever()
+
 def main():
     """Starts the Telegram Bot."""
     if not BOT_TOKEN:
         logger.critical("BOT_TOKEN is not defined in environment variables! Exiting.")
         sys.exit(1)
+
+    # Start health check server in background thread (for Render free tier)
+    health_thread = threading.Thread(target=start_health_server, daemon=True)
+    health_thread.start()
 
     logger.info("Initializing Telegram Digital Delivery Bot...")
     

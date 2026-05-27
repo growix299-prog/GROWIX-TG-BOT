@@ -18,8 +18,8 @@ if os.path.exists(env_path):
                 k, v = line.split("=", 1)
                 os.environ[k.strip()] = v.strip()
 
-from handlers.menu import start_command, handle_callback_query
-from handlers.delivery import handle_user_text
+from telegram_bot.handlers.menu import start_command, handle_callback_query
+from telegram_bot.handlers.delivery import handle_user_text
 
 # Configure logging
 logging.basicConfig(

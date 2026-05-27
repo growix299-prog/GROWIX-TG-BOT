@@ -34,7 +34,7 @@ async def create_payment_link(
         "description": f"Purchase of {product_name} via Telegram Bot",
         "customer": {
             "name": first_name,
-            "contact": "+919999999999" # Default placeholder for TG bot flow
+            "contact": "+919876543210" # Default placeholder for TG bot flow
         },
         "notify": {
             "sms": False,

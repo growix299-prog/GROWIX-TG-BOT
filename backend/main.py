@@ -132,10 +132,15 @@ async def process_digital_delivery(order_id: str, payment_id: str, amount: float
                 if order:
                     logger.info(f"Order found via notes fallback for telegram_id: {tg_id}")
 
-        if not order:
-            logger.error(f"Order not found for ID: {order_id} or Payment: {payment_id}")
-            return
-            
+    if not order:
+        logger.error(f"Order not found for ID: {order_id} or Payment: {payment_id}")
+        return
+
+    # Idempotency check: Don't process if already processed
+    if order.get("status") != "PENDING":
+        logger.info(f"Order {order_id} already processed. Skipping duplicate webhook.")
+        return
+        
     product = order["products"]
     product_id = product["id"]
     product_name = product["name"]

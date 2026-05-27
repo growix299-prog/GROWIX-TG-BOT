@@ -246,6 +246,10 @@ async def razorpay_webhook(
         
     return {"status": "ok"}
 
+@app.get("/")
+def root():
+    return {"status": "alive", "service": "NexAutomate Backend"}
+
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "service": "digital_delivery_backend"}

@@ -65,7 +65,6 @@ export default function DashboardLayout({
     { name: 'Product Catalog', href: '/dashboard/products', icon: ShoppingBag },
     { name: 'Accounts Inventory', href: '/dashboard/credentials', icon: KeyRound },
     { name: 'Purchased Orders', href: '/dashboard/orders', icon: Receipt },
-    { name: 'OTT Activation Requests', href: '/dashboard/ott', icon: Mail },
     { name: 'Payment Details', href: '/dashboard/payments', icon: Database },
     { name: 'Customer Reviews', href: '/dashboard/reviews', icon: MessageSquareHeart },
   ]

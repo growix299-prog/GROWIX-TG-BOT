@@ -1,5 +1,6 @@
 import re
 import logging
+import html
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
@@ -77,7 +78,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         f"🔒 <b>Password:</b> <code>{credential['password']}</code>\n\n"
                         f"📧 <i>We have also sent your <b>{product['name']}</b> login credentials to your email <b>{email}</b>. Please check your email as well!</i>\n\n"
                         f"⚠️ <i>Please change the credentials after logging in to secure your account. Enjoy!</i>\n\n"
-                        f"🙏 <b>Thank you {user.first_name} for shopping with us!</b>\n"
+                        f"🙏 <b>Thank you {html.escape(user.first_name)} for shopping with us!</b>\n"
                         f"We'd love to hear your feedback. Please write a review for us!"
                     )
                     

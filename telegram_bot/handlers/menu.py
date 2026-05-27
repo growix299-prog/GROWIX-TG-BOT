@@ -1,5 +1,6 @@
 import os
 import logging
+import html
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
@@ -41,7 +42,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     banner = (
         f"⚡ <b>WELCOME TO ELITE DIGITAL STORE</b> ⚡\n\n"
-        f"Hello {user.first_name}! We provide 100% automated instant delivery of gaming credentials and premium OTT services.\n\n"
+        f"Hello {html.escape(user.first_name)}! We provide 100% automated instant delivery of gaming credentials and premium OTT services.\n\n"
         f"📦 <b>Instant Delivery:</b> Game accounts (Steam, Valorant, GTA V, etc.)\n"
         f"⚙️ <b>Fast Setup:</b> OTT subscriptions (Netflix, Spotify, YouTube Premium, etc.)\n\n"
         f"📢 <b>Join our channels for updates & offers:</b>\n"

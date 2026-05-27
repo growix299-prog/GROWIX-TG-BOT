@@ -7,6 +7,7 @@ from collections import defaultdict
 import httpx
 from fastapi import FastAPI, Request, Header, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
+import html
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
 
@@ -299,7 +300,7 @@ async def admin_send_ott_credentials(
             f"━━━━━━━━━━━━━━━━━━━━━\n\n"
             f"📧 <i>We have also sent these credentials to your email <b>{payload.customer_email}</b>. Please check your email as well!</i>\n\n"
             f"⚠️ <i>Please change the password after logging in to secure your account. Enjoy your premium experience! 🚀</i>\n\n"
-            f"🙏 <b>Thank you {user_name} for shopping with us!</b>\n"
+            f"🙏 <b>Thank you {html.escape(user_name)} for shopping with us!</b>\n"
             f"We'd love to hear your feedback. Please write a review for us!"
         )
         

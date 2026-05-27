@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="TG Bot Digital Delivery Backend", docs_url=None, redoc_url=None)
 
 # Restrict CORS to only your admin dashboard origins
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "https://nexautomate-oxsd.vercel.app,http://localhost:3000,http://127.0.0.1:3000").split(",")
 
 app.add_middleware(
     CORSMiddleware,

@@ -71,7 +71,7 @@ export default function OttRequestsPage() {
       if (updateError) throw updateError;
 
       // 3. Send Credentials via backend (Resend + Telegram Notification)
-      const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000";
+      const backendBaseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://nexautomate-backend.onrender.com";
       const backendUrl = `${backendBaseUrl}/api/admin/send-ott-credentials`;
       const payload = {
         order_id: req.order_id,

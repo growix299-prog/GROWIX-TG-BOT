@@ -386,8 +386,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     elif data.startswith("buy_"):
         product_id = data.split("_")[1]
         
-        await query.edit_message_text("<blockquote>⏳ <i>Securing your order & generating payment gateway...</i></blockquote>", parse_mode="HTML")
-
         try:
             response = supabase.table("products").select("*").eq("id", product_id).execute()
             product = response.data[0] if response.data else None
@@ -404,7 +402,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             stock_check = supabase.table("credentials").select("id").eq("product_id", product_id).eq("status", "UNUSED").limit(1).execute()
             has_stock = bool(stock_check.data)
         except Exception as e:
-            logger.error(f"Stock check failed: {str(e)}")
             has_stock = False
 
         if not has_stock:
@@ -425,6 +422,71 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             return
 
         price = float(product["price"])
+        emoji = get_product_emoji(product['name'])
+        
+        checkout_text = (
+            f"⚠️ <b>PURCHASE CONFIRMATION</b> ⚠️\n\n"
+            f"📦 <b>Product:</b> {emoji} {product['name']}\n"
+            f"🔢 <b>Quantity:</b> 1\n"
+            f"💵 <b>Base Total:</b> ₹{price:.2f}\n\n"
+            f"💲 <b>FINAL DUE:</b> ₹{price:.2f}\n\n"
+            f"Select payment method:"
+        )
+
+        keyboard = [
+            [InlineKeyboardButton("👛 Pay with Wallet (₹0.00)", callback_data="alert_wallet")],
+            [InlineKeyboardButton("🟨 Binance Pay / Crypto", callback_data="alert_crypto")],
+            [InlineKeyboardButton("🇮🇳 Pay with UPI (INR)", callback_data=f"upiterms_{product['id']}")],
+            [InlineKeyboardButton("❌ Cancel", callback_data="main_menu")]
+        ]
+
+        await query.edit_message_text(
+            text=checkout_text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode="HTML"
+        )
+
+    elif data == "alert_wallet":
+        await query.answer("❌ Wallet balance is ₹0.00! Please use UPI.", show_alert=True)
+        return
+
+    elif data == "alert_crypto":
+        await query.answer("⏳ Binance Pay is currently under maintenance. Please use UPI.", show_alert=True)
+        return
+
+    elif data.startswith("upiterms_"):
+        product_id = data.split("_")[1]
+        terms_text = (
+            f"⚠️ <b>UPI TERMS & CONDITIONS</b> ⚠️\n\n"
+            f"1. We use a secure automated UPI payment gateway.\n"
+            f"2. You MUST complete the payment on the next screen.\n"
+            f"3. Do NOT modify the pre-filled amount in your UPI app.\n"
+            f"4. No refunds will be provided for incorrect payments or useless reasons.\n\n"
+            f"Do you agree to these terms?"
+        )
+        keyboard = [
+            [InlineKeyboardButton("✅ Agree", callback_data=f"upiagree_{product_id}")],
+            [InlineKeyboardButton("❌ Decline", callback_data="main_menu")]
+        ]
+        await query.edit_message_text(text=terms_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
+
+    elif data.startswith("upiagree_"):
+        product_id = data.split("_")[1]
+        await query.edit_message_text("<blockquote>⏳ <i>Securing your order & generating payment gateway...</i></blockquote>", parse_mode="HTML")
+
+        try:
+            response = supabase.table("products").select("*").eq("id", product_id).execute()
+            product = response.data[0] if response.data else None
+        except Exception as e:
+            product = None
+
+        if not product:
+            await query.edit_message_text("<blockquote>❌ Product not found.</blockquote>", parse_mode="HTML")
+            return
+
+        price = float(product["price"])
+        from telegram_bot.services.payment_gateway import create_payment_link
+        from telegram_bot.services.order_service import create_order
         
         pay_res = await create_payment_link(
             amount=price,
@@ -453,18 +515,13 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         )
 
         checkout_text = (
-            f"<blockquote>"
-            f"🛒 <b>CHECKOUT DETAILS</b> 🛒\n\n"
-            f"📦 <b>Item:</b> {product['name']}\n"
-            f"💰 <b>Amount Due:</b> ₹{price:.2f}\n"
-            f"🆔 <b>Order Reference:</b> <code>{payment_id}</code>\n\n"
-            f"🔐 Click the button below to pay securely via Razorpay. "
-            f"Once you complete the payment, our system will deliver the product instantly."
-            f"</blockquote>"
+            f"✅ <b>Order Generated Successfully!</b>\n\n"
+            f"🔖 <b>Order Ref:</b> <code>{payment_id}</code>\n\n"
+            f"Click the button below to pay securely. Once completed, your product will be delivered instantly."
         )
 
         keyboard = [
-            [InlineKeyboardButton("💳 Pay Securely (Razorpay)", url=short_url)],
+            [InlineKeyboardButton("🔗 Pay Now (Secure UPI)", url=short_url)],
             [InlineKeyboardButton("❌ Cancel Order", callback_data="main_menu")]
         ]
 

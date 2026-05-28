@@ -267,7 +267,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         if not products:
             keyboard = [[InlineKeyboardButton("🔙 Back to Menu", callback_data="main_menu")]]
             await query.edit_message_text(
-                text=f"<blockquote>🗂️ <b>Category: {category}</b>\n\nCurrently, there are no active products in this category. Please check back later!\n\n<i>[SYSTEM]: {error_msg}</i></blockquote>",
+                text=f"<blockquote>🗂️ <b>Category: {category}</b>\n\nCurrently, there are no active products in this category. Please check back later!</blockquote>",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode="HTML"
             )

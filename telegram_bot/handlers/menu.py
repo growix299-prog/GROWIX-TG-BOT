@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 def get_main_menu_keyboard():
     keyboard = [
         [
-            InlineKeyboardButton("📺 OTT Subscriptions", callback_data="cat_OTT", style="primary"),
-            InlineKeyboardButton("🎮 Game Accounts", callback_data="cat_Games", style="primary")
+            InlineKeyboardButton("📺 OTT Subscriptions", callback_data="cat_OTT"),
+            InlineKeyboardButton("🎮 Game Accounts", callback_data="cat_Games")
         ],
         [
             InlineKeyboardButton("📜 Order History", callback_data="view_history"),
@@ -27,6 +27,19 @@ def get_main_menu_keyboard():
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
+
+async def check_channel_membership(user_id, context: ContextTypes.DEFAULT_TYPE):
+    """Checks if the user is a member of the required channels."""
+    channels = ["@growix_otts", "@growix_games"]
+    for channel in channels:
+        try:
+            member = await context.bot.get_chat_member(chat_id=channel, user_id=user_id)
+            if member.status in ['left', 'kicked', 'restricted']:
+                return False
+        except Exception as e:
+            logger.error(f"Error checking membership for {channel}: {e}")
+            return False
+    return True
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /start command."""
@@ -40,28 +53,41 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         first_name=user.first_name
     )
 
+    is_member = await check_channel_membership(user.id, context)
+    
+    if not is_member:
+        banner = (
+            f"<blockquote>"
+            f"⚡ <b>WELCOME TO ELITE DIGITAL STORE</b> ⚡\n\n"
+            f"Hello <b>{html.escape(user.first_name)}</b>! To unlock our automated instant delivery of gaming credentials and premium OTT services, you must join our official channels.\n\n"
+            f"👇 <i>Join both channels below to continue:</i>"
+            f"</blockquote>"
+        )
+        keyboard = [
+            [InlineKeyboardButton("🔴 Join OTT Channel 🔴", url="https://t.me/growix_otts")],
+            [InlineKeyboardButton("🔴 Join Games Channel 🔴", url="https://t.me/growix_games")],
+            [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
+        ]
+        await update.message.reply_text(
+            text=banner,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode="HTML"
+        )
+        return
+
     banner = (
+        f"<blockquote>"
         f"⚡ <b>WELCOME TO ELITE DIGITAL STORE</b> ⚡\n\n"
-        f"Hello {html.escape(user.first_name)}! We provide 100% automated instant delivery of gaming credentials and premium OTT services.\n\n"
+        f"Hello <b>{html.escape(user.first_name)}</b>! We provide 100% automated instant delivery of premium digital services.\n\n"
         f"📦 <b>Instant Delivery:</b> Game accounts (Steam, Valorant, GTA V, etc.)\n"
         f"⚙️ <b>Fast Setup:</b> OTT subscriptions (Netflix, Spotify, YouTube Premium, etc.)\n\n"
-        f"📢 <b>Join our channels for updates & offers:</b>\n"
-        f"👇 <i>Select a category below to browse our inventory:</i>"
+        f"👇 <i>Select a category below to browse our exclusive inventory:</i>"
+        f"</blockquote>"
     )
 
-    base_keyboard = get_main_menu_keyboard().inline_keyboard
-    channel_buttons = [
-        [
-            InlineKeyboardButton("🔴 Join OTT Updates 🔴", url="https://t.me/growix_otts", style="danger")
-        ],
-        [
-            InlineKeyboardButton("🔴 Join Games Updates 🔴", url="https://t.me/growix_games", style="danger")
-        ]
-    ]
-    
     await update.message.reply_text(
         text=banner,
-        reply_markup=InlineKeyboardMarkup(channel_buttons + list(base_keyboard)),
+        reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
 
@@ -79,14 +105,14 @@ async def history_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not orders:
         await update.message.reply_text(
-            text="📜 <b>Order History</b>\n\nYou haven't made any purchases yet. Start shopping now!",
+            text="<blockquote>📜 <b>ORDER HISTORY</b>\n\nYou haven't made any purchases yet. Start shopping to access premium products!</blockquote>",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]]),
             parse_mode="HTML"
         )
         return
 
-    history_text = "📜 <b>YOUR RECENT ORDERS:</b>\n\n"
-    for idx, order in enumerate(orders[:10], 1): # Show latest 10
+    history_text = "<blockquote>📜 <b>YOUR RECENT ORDERS:</b>\n\n"
+    for idx, order in enumerate(orders[:10], 1):
         prod = order.get("products") or {}
         prod_name = prod.get("name", "Unknown Product")
         
@@ -97,6 +123,8 @@ async def history_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         history_text += f"{idx}. <b>{prod_name}</b>\n   💰 ₹{float(order.get('amount', 0)):.2f} | 📅 {order.get('created_at', '')[:10]}\n   🚚 Status: {status}\n\n"
         
+    history_text += "</blockquote>"
+    
     await update.message.reply_text(
         text=history_text,
         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]]),
@@ -106,10 +134,12 @@ async def history_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def support_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /support command."""
     support_text = (
-        f"ℹ️ <b>CUSTOMER SUPPORT</b> ℹ️\n\n"
-        f"Have issues with a digital product or payment? We are here to help!\n\n"
+        f"<blockquote>"
+        f"ℹ️ <b>PREMIUM CUSTOMER SUPPORT</b> ℹ️\n\n"
+        f"Experiencing an issue with a digital product or payment? Our elite support team is ready to assist you.\n\n"
         f"👤 <b>Admin Contact:</b> @ur_aurexia222\n\n"
-        f"<i>Please share your Order Reference ID while contacting support for quick resolution.</i>"
+        f"<i>Please provide your Order Reference ID when reaching out for the fastest resolution.</i>"
+        f"</blockquote>"
     )
     keyboard = [
         [InlineKeyboardButton("💬 Chat with Admin", url="https://t.me/ur_aurexia222")],
@@ -130,10 +160,51 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     user = query.from_user
     supabase = get_db()
 
-    if data == "main_menu":
+    if data == "check_joined":
+        is_member = await check_channel_membership(user.id, context)
+        if is_member:
+            banner = (
+                f"<blockquote>"
+                f"⚡ <b>ELITE DIGITAL STORE - MAIN MENU</b> ⚡\n\n"
+                f"Verification successful! Thank you for joining our community.\n\n"
+                f"👇 <i>Browse our premium inventory below:</i>"
+                f"</blockquote>"
+            )
+            await query.edit_message_text(
+                text=banner,
+                reply_markup=get_main_menu_keyboard(),
+                parse_mode="HTML"
+            )
+        else:
+            await query.answer("❌ You haven't joined all required channels yet! Please join them first.", show_alert=True)
+            
+    elif data == "main_menu":
+        is_member = await check_channel_membership(user.id, context)
+        if not is_member:
+            banner = (
+                f"<blockquote>"
+                f"⚡ <b>ACCESS DENIED</b> ⚡\n\n"
+                f"You must join our official channels to use this bot.\n\n"
+                f"👇 <i>Please join both channels below:</i>"
+                f"</blockquote>"
+            )
+            keyboard = [
+                [InlineKeyboardButton("🔴 Join OTT Channel 🔴", url="https://t.me/growix_otts")],
+                [InlineKeyboardButton("🔴 Join Games Channel 🔴", url="https://t.me/growix_games")],
+                [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
+            ]
+            await query.edit_message_text(
+                text=banner,
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode="HTML"
+            )
+            return
+
         banner = (
+            f"<blockquote>"
             f"⚡ <b>ELITE DIGITAL STORE - MAIN MENU</b> ⚡\n\n"
-            f"Browse our high-quality inventory using the buttons below:"
+            f"Browse our premium inventory using the buttons below:"
+            f"</blockquote>"
         )
         await query.edit_message_text(
             text=banner,
@@ -142,9 +213,13 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         )
 
     elif data.startswith("cat_"):
+        is_member = await check_channel_membership(user.id, context)
+        if not is_member:
+            await query.answer("❌ Please join our channels first!", show_alert=True)
+            return
+
         category = data.split("_")[1]
         
-        # Fetch active products in this category
         try:
             response = supabase.table("products").select("*").eq("category", category).eq("active", True).execute()
             products = response.data
@@ -158,26 +233,24 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         if not products:
             keyboard = [[InlineKeyboardButton("🔙 Back to Menu", callback_data="main_menu")]]
             await query.edit_message_text(
-                text=f"🗂️ <b>Category: {category}</b>\n\nCurrently, there are no active products in this category. Please check back later!\n\n<i>[SYSTEM DEBUG]: {error_msg}</i>",
+                text=f"<blockquote>🗂️ <b>Category: {category}</b>\n\nCurrently, there are no active products in this category. Please check back later!\n\n<i>[SYSTEM]: {error_msg}</i></blockquote>",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode="HTML"
             )
             return
 
         keyboard = []
-        # Create grid of products
         for prod in products:
             keyboard.append([
                 InlineKeyboardButton(
                     f"{prod['name']} - ₹{float(prod['price']):.2f}", 
-                    callback_data=f"prod_{prod['id']}",
-                    style="primary"
+                    callback_data=f"prod_{prod['id']}"
                 )
             ])
         keyboard.append([InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")])
 
         await query.edit_message_text(
-            text=f"🗂️ <b>Browse {category} Products:</b>\n\nChoose a product below to view details and buy:",
+            text=f"<blockquote>🗂️ <b>BROWSE {category.upper()} PRODUCTS</b>\n\nChoose a premium product below to view details and proceed to checkout:</blockquote>",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode="HTML"
         )
@@ -194,13 +267,12 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         if not product:
             await query.edit_message_text(
-                text="❌ Product not found. It may have been disabled or deleted by the admin.",
+                text="<blockquote>❌ Product not found. It may have been discontinued.</blockquote>",
                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back", callback_data="main_menu")]]),
                 parse_mode="HTML"
             )
             return
 
-        # Check stock availability
         is_in_stock = False
         stock_label = ""
         
@@ -215,22 +287,25 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         stock_label = f"✅ In Stock ({stock_count} available)" if is_in_stock else "❌ OUT OF STOCK"
 
         details = (
+            f"<blockquote>"
             f"📦 <b>PRODUCT DETAIL</b> 📦\n\n"
             f"🏷️ <b>Name:</b> {product['name']}\n"
             f"🗂️ <b>Category:</b> {product['category']}\n"
             f"💰 <b>Price:</b> ₹{float(product['price']):.2f}\n"
             f"⚡ <b>Delivery:</b> ✨ INSTANT AUTO-DELIVERY ✨\n"
-            f"📊 <b>Stock:</b> {stock_label}\n\n"
+            f"📊 <b>Stock Status:</b> {stock_label}\n\n"
         )
 
         if is_in_stock:
-            details += f"🛒 <i>Ready to purchase? Click 'Buy Now' to generate a secure Razorpay checkout link:</i>"
+            details += f"🛒 <i>Ready to purchase? Click 'Buy Now' to generate a secure automated checkout link.</i>"
+            details += "</blockquote>"
             keyboard = [
-                [InlineKeyboardButton("💳 Buy Now (Generate Link)", callback_data=f"buy_{product['id']}", style="primary")],
+                [InlineKeyboardButton("💳 Buy Now", callback_data=f"buy_{product['id']}")],
                 [InlineKeyboardButton(f"🔙 Back to {product['category']}", callback_data=f"cat_{product['category']}")]
             ]
         else:
-            details += f"⚠️ <i>This product is currently out of stock. Please check back later or contact support.</i>"
+            details += f"⚠️ <i>This product is currently out of stock. Please contact support for restocking information.</i>"
+            details += "</blockquote>"
             keyboard = [
                 [InlineKeyboardButton(f"🔙 Back to {product['category']}", callback_data=f"cat_{product['category']}")]
             ]
@@ -244,7 +319,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     elif data.startswith("buy_"):
         product_id = data.split("_")[1]
         
-        await query.edit_message_text("⏳ <i>Checking stock & generating payment link, please wait...</i>", parse_mode="HTML")
+        await query.edit_message_text("<blockquote>⏳ <i>Securing your order & generating payment gateway...</i></blockquote>", parse_mode="HTML")
 
         try:
             response = supabase.table("products").select("*").eq("id", product_id).execute()
@@ -254,10 +329,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             product = None
 
         if not product:
-            await query.edit_message_text("❌ Product not found.")
+            await query.edit_message_text("<blockquote>❌ Product not found.</blockquote>", parse_mode="HTML")
             return
 
-        # ⚠️ STOCK CHECK: Verify credentials exist before accepting payment
         has_stock = False
         try:
             stock_check = supabase.table("credentials").select("id").eq("product_id", product_id).eq("status", "UNUSED").limit(1).execute()
@@ -269,10 +343,12 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         if not has_stock:
             await query.edit_message_text(
                 text=(
+                    f"<blockquote>"
                     f"❌ <b>OUT OF STOCK!</b>\n\n"
                     f"Sorry, <b>{product['name']}</b> is currently out of stock. "
                     f"No credentials are available for delivery right now.\n\n"
                     f"Please check back later or contact support for restocking updates."
+                    f"</blockquote>"
                 ),
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]
@@ -283,7 +359,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         price = float(product["price"])
         
-        # Create Razorpay payment link
         pay_res = await create_payment_link(
             amount=price,
             product_name=product["name"],
@@ -294,7 +369,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         if not pay_res.get("success"):
             await query.edit_message_text(
-                text=f"❌ <b>Error generating payment link:</b>\n<code>{pay_res.get('error')}</code>",
+                text=f"<blockquote>❌ <b>Error generating payment link:</b>\n<code>{pay_res.get('error')}</code></blockquote>",
                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]]),
                 parse_mode="HTML"
             )
@@ -303,7 +378,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         payment_id = pay_res["payment_link_id"]
         short_url = pay_res["short_url"]
 
-        # Save order as PENDING in database
         create_order(
             telegram_id=user.id,
             product_id=product["id"],
@@ -312,17 +386,19 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         )
 
         checkout_text = (
+            f"<blockquote>"
             f"🛒 <b>CHECKOUT DETAILS</b> 🛒\n\n"
             f"📦 <b>Item:</b> {product['name']}\n"
             f"💰 <b>Amount Due:</b> ₹{price:.2f}\n"
             f"🆔 <b>Order Reference:</b> <code>{payment_id}</code>\n\n"
             f"🔐 Click the button below to pay securely via Razorpay. "
-            f"Once you complete the payment, the transaction is verified instantly by our webhooks."
+            f"Once you complete the payment, our system will deliver the product instantly."
+            f"</blockquote>"
         )
 
         keyboard = [
-            [InlineKeyboardButton("💳 Pay Securely (Razorpay)", url=short_url, style="primary")],
-            [InlineKeyboardButton("❌ Cancel Order", callback_data="main_menu", style="danger")]
+            [InlineKeyboardButton("💳 Pay Securely (Razorpay)", url=short_url)],
+            [InlineKeyboardButton("❌ Cancel Order", callback_data="main_menu")]
         ]
 
         await query.edit_message_text(
@@ -333,7 +409,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
     elif data == "view_history":
         try:
-            # Query user orders (all statuses)
             response = supabase.table("orders").select("*, products(*)").eq("telegram_id", user.id).order("created_at", desc=True).execute()
             orders = response.data
         except Exception as e:
@@ -342,14 +417,14 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         if not orders:
             await query.edit_message_text(
-                text="📜 <b>Order History</b>\n\nYou haven't made any purchases yet. Start shopping now!",
+                text="<blockquote>📜 <b>ORDER HISTORY</b>\n\nYou haven't made any purchases yet. Start shopping to access premium products!</blockquote>",
                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]]),
                 parse_mode="HTML"
             )
             return
 
-        history_text = "📜 <b>YOUR RECENT ORDERS:</b>\n\n"
-        for idx, order in enumerate(orders[:10], 1): # Show latest 10
+        history_text = "<blockquote>📜 <b>YOUR RECENT ORDERS:</b>\n\n"
+        for idx, order in enumerate(orders[:10], 1):
             prod = order.get("products") or {}
             prod_name = prod.get("name", "Unknown Product")
             
@@ -360,6 +435,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 
             history_text += f"{idx}. <b>{prod_name}</b>\n   💰 ₹{float(order.get('amount', 0)):.2f} | 📅 {order.get('created_at', '')[:10]}\n   🚚 Status: {status}\n\n"
             
+        history_text += "</blockquote>"
+            
         await query.edit_message_text(
             text=history_text,
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]]),
@@ -368,10 +445,12 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
     elif data == "view_support":
         support_text = (
-            f"ℹ️ <b>CUSTOMER SUPPORT</b> ℹ️\n\n"
-            f"Have issues with a digital product or payment? We are here to help!\n\n"
+            f"<blockquote>"
+            f"ℹ️ <b>PREMIUM CUSTOMER SUPPORT</b> ℹ️\n\n"
+            f"Experiencing an issue with a digital product or payment? Our elite support team is ready to assist you.\n\n"
             f"👤 <b>Admin Contact:</b> @ur_aurexia222\n\n"
-            f"<i>Please share your Order Reference ID while contacting support for quick resolution.</i>"
+            f"<i>Please provide your Order Reference ID when reaching out for the fastest resolution.</i>"
+            f"</blockquote>"
         )
         keyboard = [
             [InlineKeyboardButton("💬 Chat with Admin", url="https://t.me/ur_aurexia222")],
@@ -386,11 +465,12 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     elif data == "write_review":
         context.user_data['awaiting_review'] = True
         review_text = (
-            f"🌟 <b>We value your feedback!</b> 🌟\n\n"
-            f"Please type your review below and send it to me. Your reviews help us improve our services!"
+            f"<blockquote>"
+            f"🌟 <b>WE VALUE YOUR FEEDBACK!</b> 🌟\n\n"
+            f"Please type your review below and send it to me. Your reviews help us improve our premium services!"
+            f"</blockquote>"
         )
         await query.edit_message_text(
             text=review_text,
             parse_mode="HTML"
         )
-

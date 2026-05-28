@@ -177,14 +177,31 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             )
         else:
             await query.answer("❌ First join both the channels!", show_alert=True)
+            banner = (
+                f"<blockquote>"
+                f"❌ <b>ACCESS DENIED</b> ❌\n\n"
+                f"You haven't joined both channels yet! First join both the channels to continue.\n\n"
+                f"👇 <i>Please join both channels below:</i>"
+                f"</blockquote>"
+            )
+            keyboard = [
+                [InlineKeyboardButton("🔴 Join OTT Channel 🔴", url="https://t.me/growix_otts", **{"style": "danger"} if True else {})],
+                [InlineKeyboardButton("🔴 Join Games Channel 🔴", url="https://t.me/growix_games", **{"style": "danger"} if True else {})],
+                [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
+            ]
+            await query.edit_message_text(
+                text=banner,
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode="HTML"
+            )
             
     elif data == "main_menu":
         is_member = await check_channel_membership(user.id, context)
         if not is_member:
             banner = (
                 f"<blockquote>"
-                f"⚡ <b>ACCESS DENIED</b> ⚡\n\n"
-                f"You must join our official channels to use this bot.\n\n"
+                f"❌ <b>ACCESS DENIED</b> ❌\n\n"
+                f"First join both the channels to unlock the bot!\n\n"
                 f"👇 <i>Please join both channels below:</i>"
                 f"</blockquote>"
             )
@@ -216,6 +233,23 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         is_member = await check_channel_membership(user.id, context)
         if not is_member:
             await query.answer("❌ First join both the channels!", show_alert=True)
+            banner = (
+                f"<blockquote>"
+                f"❌ <b>ACCESS DENIED</b> ❌\n\n"
+                f"First join both the channels to view products!\n\n"
+                f"👇 <i>Please join both channels below:</i>"
+                f"</blockquote>"
+            )
+            keyboard = [
+                [InlineKeyboardButton("🔴 Join OTT Channel 🔴", url="https://t.me/growix_otts", **{"style": "danger"} if True else {})],
+                [InlineKeyboardButton("🔴 Join Games Channel 🔴", url="https://t.me/growix_games", **{"style": "danger"} if True else {})],
+                [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
+            ]
+            await query.edit_message_text(
+                text=banner,
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode="HTML"
+            )
             return
 
         category = data.split("_")[1]

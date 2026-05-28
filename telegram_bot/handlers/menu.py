@@ -17,26 +17,34 @@ logger = logging.getLogger(__name__)
 # Main Menu Layout
 def get_reply_keyboard():
     return ReplyKeyboardMarkup([
-        ["📺 OTT Subscriptions", "🎮 Game Accounts"],
-        ["📜 Purchase History", "ℹ️ Support"]
+        ["🛍️ Products", "🎁 Redeem Code"],
+        ["👛 Wallet", "👤 My Profile"],
+        ["💬 Support"]
     ], resize_keyboard=True)
 
 def get_main_menu_keyboard():
     keyboard = [
         [
-            InlineKeyboardButton("📺 OTT Subscriptions", callback_data="cat_OTT"),
-            InlineKeyboardButton("🎮 Game Accounts", callback_data="cat_Games")
+            InlineKeyboardButton("🛍️ Products", callback_data="view_products"),
+            InlineKeyboardButton("🎁 Redeem Code", callback_data="coming_soon")
         ],
         [
-            InlineKeyboardButton("📜 Order History", callback_data="view_history"),
-            InlineKeyboardButton("ℹ️ Support / Help", callback_data="view_support")
+            InlineKeyboardButton("👤 My Profile", callback_data="coming_soon"),
+            InlineKeyboardButton("📝 Purchase History", callback_data="view_history")
+        ],
+        [
+            InlineKeyboardButton("👛 Wallet", callback_data="coming_soon")
+        ],
+        [
+            InlineKeyboardButton("↗️ Support", callback_data="view_support"),
+            InlineKeyboardButton("🌍 Language", callback_data="coming_soon")
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 async def check_channel_membership(user_id, context: ContextTypes.DEFAULT_TYPE):
     """Checks if the user is a member of the required channels."""
-    channels = ["@growix_otts", "@growix_games"]
+    channels = ["@aurexia_store"]
     for channel in channels:
         try:
             member = await context.bot.get_chat_member(chat_id=channel, user_id=user_id)
@@ -68,8 +76,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"📌 <i>Join both channels below to continue:</i>"
         )
         keyboard = [
-            [InlineKeyboardButton("🔴 Join OTT Channel 🔴", url="https://t.me/growix_otts", **{"style": "danger"} if True else {})],
-            [InlineKeyboardButton("🔴 Join Games Channel 🔴", url="https://t.me/growix_games", **{"style": "danger"} if True else {})],
+            [InlineKeyboardButton("🔴 Join Channel 🔴", url="https://t.me/aurexia_store", **{"style": "danger"} if True else {})],
             [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
         ]
         await update.message.reply_text(
@@ -185,6 +192,23 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     user = query.from_user
     supabase = get_db()
 
+    if data == "coming_soon":
+        await query.answer("⏳ This feature is coming soon!", show_alert=True)
+        return
+
+    if data == "view_products":
+        keyboard = [
+            [InlineKeyboardButton("📺 OTT Subscriptions", callback_data="cat_OTT")],
+            [InlineKeyboardButton("🎮 Game Accounts", callback_data="cat_Games")],
+            [InlineKeyboardButton("🔙 Back", callback_data="main_menu")]
+        ]
+        await query.edit_message_text(
+            text="<blockquote>🛒 <b>CATEGORIES</b>\n\nPlease select a product category below:</blockquote>",
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode="HTML"
+        )
+        return
+
     if data == "check_joined":
         is_member = await check_channel_membership(user.id, context)
         if is_member:
@@ -203,17 +227,16 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 parse_mode="HTML"
             )
         else:
-            await query.answer("❌ First join both the channels!", show_alert=True)
+            await query.answer("❌ First join the channel!", show_alert=True)
             banner = (
                 f"<blockquote>"
                 f"❌ <b>ACCESS DENIED</b> ❌\n\n"
-                f"You haven't joined both channels yet! First join both the channels to continue.\n\n"
-                f"👇 <i>Please join both channels below:</i>"
+                f"You haven't joined both channels yet! First join the channel to continue.\n\n"
+                f"👇 <i>Please join the channel below:</i>"
                 f"</blockquote>"
             )
             keyboard = [
-                [InlineKeyboardButton("🔴 Join OTT Channel 🔴", url="https://t.me/growix_otts", **{"style": "danger"} if True else {})],
-                [InlineKeyboardButton("🔴 Join Games Channel 🔴", url="https://t.me/growix_games", **{"style": "danger"} if True else {})],
+                [InlineKeyboardButton("🔴 Join Channel 🔴", url="https://t.me/aurexia_store", **{"style": "danger"} if True else {})],
                 [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
             ]
             await query.edit_message_text(
@@ -228,13 +251,12 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             banner = (
                 f"<blockquote>"
                 f"❌ <b>ACCESS DENIED</b> ❌\n\n"
-                f"First join both the channels to unlock the bot!\n\n"
-                f"👇 <i>Please join both channels below:</i>"
+                f"First join the channel to unlock the bot!\n\n"
+                f"👇 <i>Please join the channel below:</i>"
                 f"</blockquote>"
             )
             keyboard = [
-                [InlineKeyboardButton("🔴 Join OTT Channel 🔴", url="https://t.me/growix_otts", **{"style": "danger"} if True else {})],
-                [InlineKeyboardButton("🔴 Join Games Channel 🔴", url="https://t.me/growix_games", **{"style": "danger"} if True else {})],
+                [InlineKeyboardButton("🔴 Join Channel 🔴", url="https://t.me/aurexia_store", **{"style": "danger"} if True else {})],
                 [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
             ]
             await query.edit_message_text(
@@ -262,17 +284,16 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     elif data.startswith("cat_"):
         is_member = await check_channel_membership(user.id, context)
         if not is_member:
-            await query.answer("❌ First join both the channels!", show_alert=True)
+            await query.answer("❌ First join the channel!", show_alert=True)
             banner = (
                 f"<blockquote>"
                 f"❌ <b>ACCESS DENIED</b> ❌\n\n"
-                f"First join both the channels to view products!\n\n"
-                f"👇 <i>Please join both channels below:</i>"
+                f"First join the channel to view products!\n\n"
+                f"👇 <i>Please join the channel below:</i>"
                 f"</blockquote>"
             )
             keyboard = [
-                [InlineKeyboardButton("🔴 Join OTT Channel 🔴", url="https://t.me/growix_otts", **{"style": "danger"} if True else {})],
-                [InlineKeyboardButton("🔴 Join Games Channel 🔴", url="https://t.me/growix_games", **{"style": "danger"} if True else {})],
+                [InlineKeyboardButton("🔴 Join Channel 🔴", url="https://t.me/aurexia_store", **{"style": "danger"} if True else {})],
                 [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
             ]
             await query.edit_message_text(

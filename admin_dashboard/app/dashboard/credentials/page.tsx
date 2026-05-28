@@ -49,7 +49,7 @@ export default function CredentialsPage() {
       // Fetch credentials with products
       const { data: credsData } = await supabase
         .from('credentials')
-        .select('*, products(name)')
+        .select('*, products(name, category)')
         .order('created_at', { ascending: false })
       
       setCredentials(credsData || [])

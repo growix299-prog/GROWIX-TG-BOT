@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def get_reply_keyboard():
     return ReplyKeyboardMarkup([
         ["🛍️ Products", "📝 Purchase History"],
-        ["💬 Support"]
+        ["↗️ Support"]
     ], resize_keyboard=True)
 
 def get_main_menu_keyboard():

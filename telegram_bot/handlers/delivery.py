@@ -172,7 +172,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await message.reply_text(text=history_text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]]), parse_mode="HTML")
         return
         
-    elif text == "💬 Support":
+    elif text == "↗️ Support":
         support_text = "<blockquote>ℹ️ <b>PREMIUM CUSTOMER SUPPORT</b> ℹ️\n\n👤 <b>Admin Contact:</b> @ur_aurexia222\n\n<i>Please provide your Order Reference ID when reaching out for the fastest resolution.</i></blockquote>"
         await message.reply_text(text=support_text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("💬 Chat with Admin", url="https://t.me/ur_aurexia222")]]), parse_mode="HTML")
         return

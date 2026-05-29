@@ -110,6 +110,7 @@ export default function UsersPage() {
     setActionLoading(true)
     const tgId = actionModal.user.telegram_id
     const amt = parseFloat(actionAmount)
+    try {
       const cur = parseFloat(actionModal.user.wallet_balance || 0)
       await supabase.from('users').update({ wallet_balance: cur + amt }).eq('telegram_id', tgId)
       await supabase.from('wallet_transactions').insert({ telegram_id: tgId, amount: amt, transaction_type: 'DEPOSIT', reference_id: 'ADMIN_CREDIT', description: actionDesc || `Admin credit of ₹${amt.toFixed(2)}` })

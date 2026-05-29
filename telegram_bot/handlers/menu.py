@@ -30,7 +30,7 @@ def get_reply_keyboard():
 def get_main_menu_keyboard():
     keyboard = [
         [
-            InlineKeyboardButton("🛍 Products", callback_data="view_products"),
+            InlineKeyboardButton("<tg-emoji emoji-id=\"5215203655946346044\">🛍</tg-emoji> Products", callback_data="view_products"),
             InlineKeyboardButton("👛 Wallet", callback_data="view_wallet")
         ],
         [

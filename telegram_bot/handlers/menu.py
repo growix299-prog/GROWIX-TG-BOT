@@ -584,7 +584,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
     elif data == "wallet_deposit":
         deposit_text = (
-            f"➕ 𝐀𝐃𝐃 𝐅𝐔𝐍𝐃𝐒\n"
+            f"<tg-emoji emoji-id=\"5206607081334906820\">✅</tg-emoji> 𝐀𝐃𝐃 𝐅𝐔𝐍𝐃𝐒\n"
             f"▬▬▬▬▬▬▬▬▬▬▬\n\n"
             f"Choose an amount to deposit into your wallet:\n\n"
             f"Minimum: ₹100 | Maximum: ₹10,000\n"

@@ -77,35 +77,19 @@ export default function UsersPage() {
   const handleDelete = async (tgId: number) => {
     if (!window.confirm(`Permanently delete user ${tgId} and ALL related data (orders, transactions, reviews)?`)) return
     try {
-      // Fetch user's orders to handle foreign keys
-      const { data: userOrders } = await supabase.from('orders').select('id, payment_id').eq('telegram_id', tgId)
+      const { error } = await supabase.rpc('admin_delete_user', { target_tg_id: tgId })
       
-      if (userOrders && userOrders.length > 0) {
-        const orderIds = userOrders.map(o => o.id)
-        const paymentIds = userOrders.map(o => o.payment_id).filter(Boolean)
-        
-        // Delete related OTT requests
-        if (orderIds.length > 0) {
-          await supabase.from('ott_requests').delete().in('order_id', orderIds)
-        }
-        // Delete related payments
-        if (paymentIds.length > 0) {
-          await supabase.from('payments').delete().in('payment_id', paymentIds)
-        }
+      if (error) {
+        alert('Delete failed: ' + error.message)
+        return
       }
       
-      // Delete core records
-      await supabase.from('wallet_transactions').delete().eq('telegram_id', tgId)
-      await supabase.from('reviews').delete().eq('telegram_id', tgId)
-      await supabase.from('orders').delete().eq('telegram_id', tgId)
-      await supabase.from('users').delete().eq('telegram_id', tgId)
-      
-      // Optimistic update for instant UI feedback
-      setUsers(prev => prev.filter(u => u.telegram_id !== tgId))
-      setFiltered(prev => prev.filter(u => u.telegram_id !== tgId))
+      // Optimistic update for instant UI feedback (cast to String for safe comparison)
+      setUsers(prev => prev.filter(u => String(u.telegram_id) !== String(tgId)))
+      setFiltered(prev => prev.filter(u => String(u.telegram_id) !== String(tgId)))
       
       alert('User successfully deleted.')
-      // Optionally still fetch in background, but the UI is already updated
+      // Optionally still fetch in background
       fetchUsers()
     } catch (e: any) { alert('Delete failed: ' + e.message) }
   }

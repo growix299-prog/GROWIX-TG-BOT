@@ -90,7 +90,7 @@ export default function UsersPage() {
         }
         // Delete related payments
         if (paymentIds.length > 0) {
-          await supabase.from('payments').delete().in('payment_id', paymentIds).catch(() => {})
+          await supabase.from('payments').delete().in('payment_id', paymentIds)
         }
       }
       

@@ -78,9 +78,9 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     banner = (
             f"HI 🫲<tg-emoji emoji-id=\"5456258317477230911\">😎</tg-emoji>🫱 {html.escape(user.first_name)}\n"
-            f"WELCOME TO <tg-emoji emoji-id=\"5314391089514291948\">🤖</tg-emoji>\n"
+            f"WELCOME TO <tg-emoji emoji-id=\"5217558900047359541\">🤖</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"𝐆𝐀𝐌𝐄𝐒 𝐀𝐍𝐃 𝐎𝐓𝐓 𝐁𝐎𝐓 <tg-emoji emoji-id=\"5895242866057286055\">➡️</tg-emoji>\n"
+            f"𝐆𝐀𝐌𝐄𝐒 𝐀𝐍𝐃 𝐎𝐓𝐓 𝐁𝐎𝐓 <tg-emoji emoji-id=\"5895646210731019949\">➡️</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬\n"
             f"<tg-emoji emoji-id=\"5406745015365943482\">🔖</tg-emoji> QUICK GUIDE :\n"
             f"<tg-emoji emoji-id=\"5346105514575025401\">🔴</tg-emoji> 𝚃𝙰𝙿 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃𝚂' 𝙱𝚄𝚃𝚃𝙾𝙽.\n"
@@ -209,20 +209,20 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         is_member = await check_channel_membership(user.id, context)
         if is_member:
             banner = (
-                f"HI 🫲😀🫱 {html.escape(user.first_name)}\n"
-                f"WELCOME TO 🎬\n"
+                f"HI 🫲<tg-emoji emoji-id=\"5456258317477230911\">😎</tg-emoji>🫱 {html.escape(user.first_name)}\n"
+                f"WELCOME TO <tg-emoji emoji-id=\"5217558900047359541\">🤖</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"𝐆𝐀𝐌𝐄𝐒 𝐀𝐍𝐃 𝐎𝐓𝐓 𝐁𝐎𝐓\n"
+                f"𝐆𝐀𝐌𝐄𝐒 𝐀𝐍𝐃 𝐎𝐓𝐓 𝐁𝐎𝐓 <tg-emoji emoji-id=\"5895646210731019949\">➡️</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"📌 QUICK GUIDE :\n"
-                f"🔖 𝚃𝙰𝙿 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃𝚂' 𝙱𝚄𝚃𝚃𝙾𝙽.\n"
-                f"🔖 𝚃𝙰𝙿 '𝙾𝚃𝚃' 𝙾𝚁 '𝙶𝙰𝙼𝙴𝚂' 𝚃𝙾 𝙱𝚁𝙾𝚆𝚂𝙴 𝙿𝚁𝙾𝙳𝚄𝙲𝚃𝚂.\n"
-                f"🔖 𝙲𝙷𝙾𝙾𝚂𝙴 𝚃𝙷𝙴 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚈𝙾𝚄 𝚆𝙰𝙽𝚃.\n"
-                f"🔖 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴 𝚃𝙷𝙴 '𝙿𝙰𝚈𝙼𝙴𝙽𝚃'.\n"
-                f"🔖 𝚈𝙾𝚄𝚁 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚆𝙸𝙻𝙻 𝙱𝙴 𝙳𝙴𝙻𝙸𝚅𝙴𝚁𝙴𝙳 𝙸𝙽𝚂𝚃𝙰𝙽𝚃𝙻𝚈.\n"
+                f"<tg-emoji emoji-id=\"5406745015365943482\">🔖</tg-emoji> QUICK GUIDE :\n"
+                f"<tg-emoji emoji-id=\"5346105514575025401\">🔴</tg-emoji> 𝚃𝙰𝙿 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃𝚂' 𝙱𝚄𝚃𝚃𝙾𝙽.\n"
+                f"<tg-emoji emoji-id=\"5346105514575025401\">🔴</tg-emoji> 𝚃𝙰𝙿 '𝙾𝚃𝚃' 𝙾𝚁 '𝙶𝙰𝙼𝙴𝚂' 𝚃𝙾 𝙱𝚁𝙾𝚆𝚂𝙴 𝙿𝚁𝙾𝙳𝚄𝙲𝚃𝚂.\n"
+                f"<tg-emoji emoji-id=\"5346105514575025401\">🔴</tg-emoji> 𝙲𝙷𝙾𝙾𝚂𝙴 𝚃𝙷𝙴 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚈𝙾𝚄 𝚆𝙰𝙽𝚃.\n"
+                f"<tg-emoji emoji-id=\"5346105514575025401\">🔴</tg-emoji> 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴 𝚃𝙷𝙴 '𝙿𝙰𝚈𝙼𝙴𝙽𝚃'.\n"
+                f"<tg-emoji emoji-id=\"5346105514575025401\">🔴</tg-emoji> 𝚈𝙾𝚄𝚁 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚆𝙸𝙻𝙻 𝙱𝙴 𝙳𝙴𝙻𝙸𝚅𝙴𝚁𝙴𝙳 𝙸𝙽𝚂𝚃𝙰𝙽𝚃𝙻𝚈.\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"📌 PLEASE CHOOSE A MENU BELOW 👇👇👇"
-        )
+                f"PLEASE CHOOSE A MENU BELOW <tg-emoji emoji-id=\"5222444124698853913\">⬇️</tg-emoji><tg-emoji emoji-id=\"5222444124698853913\">⬇️</tg-emoji><tg-emoji emoji-id=\"5222444124698853913\">⬇️</tg-emoji>"
+            )
             await query.edit_message_text(
                 text=banner,
                 reply_markup=get_main_menu_keyboard(),

@@ -78,14 +78,20 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     banner = (
-        f"🚀 <b>System Dashboard Activated</b>\n\n"
-        f"📌 <b>Quick guide:</b>\n"
-        f"1. Tap 'OTT' or 'Games' to browse products.\n"
-        f"2. Choose the product you want.\n"
-        f"3. Complete the payment.\n"
-        f"4. Your product will be delivered instantly.\n\n"
-        f"📌 <i>Please choose a menu below:</i>"
-    )
+            f"HI 🫲😀🫱 {html.escape(user.first_name)}\n"
+            f"WELCOME TO 🎬\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"𝐆𝐀𝐌𝐄𝐒 𝐀𝐍𝐃 𝐎𝐓𝐓 𝐁𝐎𝐓\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"📌 QUICK GUIDE :\n"
+            f"🔖 𝚃𝙰𝙿 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃𝚂' 𝙱𝚄𝚃𝚃𝙾𝙽.\n"
+            f"🔖 𝚃𝙰𝙿 '𝙾𝚃𝚃' 𝙾𝚁 '𝙶𝙰𝙼𝙴𝚂' 𝚃𝙾 𝙱𝚁𝙾𝚆𝚂𝙴 𝙿𝚁𝙾𝙳𝚄𝙲𝚃𝚂.\n"
+            f"🔖 𝙲𝙷𝙾𝙾𝚂𝙴 𝚃𝙷𝙴 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚈𝙾𝚄 𝚆𝙰𝙽𝚃.\n"
+            f"🔖 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴 𝚃𝙷𝙴 '𝙿𝙰𝚈𝙼𝙴𝙽𝚃'.\n"
+            f"🔖 𝚈𝙾𝚄𝚁 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚆𝙸𝙻𝙻 𝙱𝙴 𝙳𝙴𝙻𝙸𝚅𝙴𝚁𝙴𝙳 𝙸𝙽𝚂𝚃𝙰𝙽𝚃𝙻𝚈.\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"📌 PLEASE CHOOSE A MENU BELOW 👇👇👇"
+        )
 
     # Send the bottom reply keyboard first
     await update.message.reply_text(
@@ -204,14 +210,20 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         is_member = await check_channel_membership(user.id, context)
         if is_member:
             banner = (
-                f"🚀 <b>System Dashboard Activated</b>\n\n"
-                f"📌 <b>Quick guide:</b>\n"
-                f"1. Tap 'OTT' or 'Games' to browse products.\n"
-                f"2. Choose the product you want.\n"
-                f"3. Complete the payment.\n"
-                f"4. Your product will be delivered instantly.\n\n"
-                f"📌 <i>Please choose a menu below:</i>"
-            )
+                f"HI 🫲😀🫱 {html.escape(user.first_name)}\n"
+                f"WELCOME TO 🎬\n"
+                f"▬▬▬▬▬▬▬▬▬▬▬\n"
+                f"𝐆𝐀𝐌𝐄𝐒 𝐀𝐍𝐃 𝐎𝐓𝐓 𝐁𝐎𝐓\n"
+                f"▬▬▬▬▬▬▬▬▬▬▬\n"
+                f"📌 QUICK GUIDE :\n"
+                f"🔖 𝚃𝙰𝙿 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃𝚂' 𝙱𝚄𝚃𝚃𝙾𝙽.\n"
+                f"🔖 𝚃𝙰𝙿 '𝙾𝚃𝚃' 𝙾𝚁 '𝙶𝙰𝙼𝙴𝚂' 𝚃𝙾 𝙱𝚁𝙾𝚆𝚂𝙴 𝙿𝚁𝙾𝙳𝚄𝙲𝚃𝚂.\n"
+                f"🔖 𝙲𝙷𝙾𝙾𝚂𝙴 𝚃𝙷𝙴 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚈𝙾𝚄 𝚆𝙰𝙽𝚃.\n"
+                f"🔖 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴 𝚃𝙷𝙴 '𝙿𝙰𝚈𝙼𝙴𝙽𝚃'.\n"
+                f"🔖 𝚈𝙾𝚄𝚁 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚆𝙸𝙻𝙻 𝙱𝙴 𝙳𝙴𝙻𝙸𝚅𝙴𝚁𝙴𝙳 𝙸𝙽𝚂𝚃𝙰𝙽𝚃𝙻𝚈.\n"
+                f"▬▬▬▬▬▬▬▬▬▬▬\n"
+                f"📌 PLEASE CHOOSE A MENU BELOW 👇👇👇"
+        )
             await query.edit_message_text(
                 text=banner,
                 reply_markup=get_main_menu_keyboard(),
@@ -258,13 +270,19 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             return
 
         banner = (
-            f"🚀 System Dashboard Activated\n\n"
-            f"📌 Quick guide:\n"
-            f"1. Tap 'Products'.\n"
-            f"2. Choose the product you want.\n"
-            f"3. Complete the payment.\n"
-            f"4. Your product will be delivered instantly.\n\n"
-            f"📌 Please choose a menu:"
+            f"HI 🫲😀🫱 {html.escape(user.first_name)}\n"
+            f"WELCOME TO 🎬\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"𝐆𝐀𝐌𝐄𝐒 𝐀𝐍𝐃 𝐎𝐓𝐓 𝐁𝐎𝐓\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"📌 QUICK GUIDE :\n"
+            f"🔖 𝚃𝙰𝙿 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃𝚂' 𝙱𝚄𝚃𝚃𝙾𝙽.\n"
+            f"🔖 𝚃𝙰𝙿 '𝙾𝚃𝚃' 𝙾𝚁 '𝙶𝙰𝙼𝙴𝚂' 𝚃𝙾 𝙱𝚁𝙾𝚆𝚂𝙴 𝙿𝚁𝙾𝙳𝚄𝙲𝚃𝚂.\n"
+            f"🔖 𝙲𝙷𝙾𝙾𝚂𝙴 𝚃𝙷𝙴 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚈𝙾𝚄 𝚆𝙰𝙽𝚃.\n"
+            f"🔖 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴 𝚃𝙷𝙴 '𝙿𝙰𝚈𝙼𝙴𝙽𝚃'.\n"
+            f"🔖 𝚈𝙾𝚄𝚁 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚆𝙸𝙻𝙻 𝙱𝙴 𝙳𝙴𝙻𝙸𝚅𝙴𝚁𝙴𝙳 𝙸𝙽𝚂𝚃𝙰𝙽𝚃𝙻𝚈.\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"📌 PLEASE CHOOSE A MENU BELOW 👇👇👇"
         )
         await query.edit_message_text(
             text=banner,

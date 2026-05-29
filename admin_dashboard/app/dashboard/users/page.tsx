@@ -100,7 +100,12 @@ export default function UsersPage() {
       await supabase.from('orders').delete().eq('telegram_id', tgId)
       await supabase.from('users').delete().eq('telegram_id', tgId)
       
+      // Optimistic update for instant UI feedback
+      setUsers(prev => prev.filter(u => u.telegram_id !== tgId))
+      setFiltered(prev => prev.filter(u => u.telegram_id !== tgId))
+      
       alert('User successfully deleted.')
+      // Optionally still fetch in background, but the UI is already updated
       fetchUsers()
     } catch (e: any) { alert('Delete failed: ' + e.message) }
   }
@@ -139,11 +144,10 @@ export default function UsersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {statCard(<Users className="w-6 h-6 text-blue-400"/>, 'Total Users', String(users.length), 'bg-blue-950')}
         {statCard(<Wallet className="w-6 h-6 text-emerald-400"/>, 'Total Wallet Balance', `₹${totalBalance.toFixed(2)}`, 'bg-emerald-950')}
         {statCard(<ArrowDownCircle className="w-6 h-6 text-yellow-400"/>, 'Total Deposits', `₹${totalDeposits.toFixed(2)}`, 'bg-yellow-950')}
-        {statCard(<RotateCcw className="w-6 h-6 text-purple-400"/>, 'Total Refunds', `₹${totalRefunds.toFixed(2)}`, 'bg-purple-950')}
       </div>
 
       {/* Filters */}

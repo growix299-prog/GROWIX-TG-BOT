@@ -379,3 +379,137 @@ async def admin_send_ott_credentials(
         await send_telegram_message(payload.telegram_id, msg, reply_markup=keyboard)
         
     return {"status": "ok", "message": "Credentials sent successfully"}
+
+# ==========================================
+# ADMIN USER & WALLET MANAGEMENT ENDPOINTS
+# ==========================================
+
+class WalletActionPayload(BaseModel):
+    amount: float
+    description: Optional[str] = None
+
+@app.get("/api/admin/users")
+async def admin_list_users(
+    request: Request,
+    _auth: bool = Depends(verify_admin_api_key)
+):
+    """List all users with wallet balances and order counts."""
+    client_ip = request.client.host if request.client else "unknown"
+    check_rate_limit(client_ip, max_requests=30, window_seconds=60)
+    
+    db = get_db()
+    try:
+        # Fetch all users
+        users_resp = db.table("users").select("*").order("created_at", desc=True).execute()
+        users = users_resp.data or []
+        
+        # Fetch order counts per user
+        for user in users:
+            try:
+                orders_resp = db.table("orders").select("id, amount, status, delivery_status, created_at, products(name, category)").eq("telegram_id", user["telegram_id"]).order("created_at", desc=True).execute()
+                user["orders"] = orders_resp.data or []
+                user["total_orders"] = len(user["orders"])
+                user["total_spent"] = sum(float(o.get("amount", 0)) for o in user["orders"] if o.get("status") == "COMPLETED")
+            except:
+                user["orders"] = []
+                user["total_orders"] = 0
+                user["total_spent"] = 0
+            
+            try:
+                txn_resp = db.table("wallet_transactions").select("*").eq("telegram_id", user["telegram_id"]).order("created_at", desc=True).execute()
+                user["wallet_transactions"] = txn_resp.data or []
+            except:
+                user["wallet_transactions"] = []
+        
+        return {"users": users}
+    except Exception as e:
+        logger.error(f"Error listing users: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/admin/users/{telegram_id}/refund")
+async def admin_refund_user(
+    telegram_id: int,
+    payload: WalletActionPayload,
+    request: Request,
+    _auth: bool = Depends(verify_admin_api_key)
+):
+    """Refund amount to user's wallet."""
+    client_ip = request.client.host if request.client else "unknown"
+    check_rate_limit(client_ip, max_requests=10, window_seconds=60)
+    
+    from backend.services.supabase_service import refund_wallet_balance
+    success = refund_wallet_balance(
+        telegram_id=telegram_id,
+        amount=payload.amount,
+        reference_id="ADMIN_REFUND",
+        description=payload.description or f"Admin refund of ₹{payload.amount:.2f}"
+    )
+    
+    if success:
+        new_balance = get_wallet_balance(telegram_id)
+        # Notify user via Telegram
+        msg = (
+            f"💰 <b>WALLET REFUND</b>\n\n"
+            f"₹{payload.amount:.2f} has been refunded to your wallet by the admin.\n"
+            f"👛 <b>New Balance:</b> ₹{new_balance:.2f}"
+        )
+        await send_telegram_message(telegram_id, msg)
+        return {"status": "ok", "new_balance": new_balance}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to refund wallet")
+
+@app.post("/api/admin/users/{telegram_id}/add-funds")
+async def admin_add_funds(
+    telegram_id: int,
+    payload: WalletActionPayload,
+    request: Request,
+    _auth: bool = Depends(verify_admin_api_key)
+):
+    """Admin manually adds funds to user's wallet."""
+    client_ip = request.client.host if request.client else "unknown"
+    check_rate_limit(client_ip, max_requests=10, window_seconds=60)
+    
+    success = add_wallet_balance(
+        telegram_id=telegram_id,
+        amount=payload.amount,
+        reference_id="ADMIN_CREDIT",
+        description=payload.description or f"Admin credit of ₹{payload.amount:.2f}"
+    )
+    
+    if success:
+        new_balance = get_wallet_balance(telegram_id)
+        msg = (
+            f"💰 <b>WALLET CREDIT</b>\n\n"
+            f"₹{payload.amount:.2f} has been added to your wallet by the admin.\n"
+            f"👛 <b>New Balance:</b> ₹{new_balance:.2f}"
+        )
+        await send_telegram_message(telegram_id, msg)
+        return {"status": "ok", "new_balance": new_balance}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to add funds")
+
+@app.delete("/api/admin/users/{telegram_id}")
+async def admin_delete_user(
+    telegram_id: int,
+    request: Request,
+    _auth: bool = Depends(verify_admin_api_key)
+):
+    """Delete a user and all related data."""
+    client_ip = request.client.host if request.client else "unknown"
+    check_rate_limit(client_ip, max_requests=5, window_seconds=60)
+    
+    db = get_db()
+    try:
+        # Delete wallet transactions
+        db.table("wallet_transactions").delete().eq("telegram_id", telegram_id).execute()
+        # Delete reviews
+        db.table("reviews").delete().eq("telegram_id", telegram_id).execute()
+        # Delete orders (and related ott_requests via cascade)
+        db.table("orders").delete().eq("telegram_id", telegram_id).execute()
+        # Delete user
+        db.table("users").delete().eq("telegram_id", telegram_id).execute()
+        
+        return {"status": "ok", "message": f"User {telegram_id} and all related data deleted."}
+    except Exception as e:
+        logger.error(f"Error deleting user {telegram_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

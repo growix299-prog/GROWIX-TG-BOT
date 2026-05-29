@@ -15,7 +15,8 @@ import {
   LogOut,
   User,
   Activity,
-  MessageSquareHeart
+  MessageSquareHeart,
+  Wallet
 } from 'lucide-react'
 
 export default function DashboardLayout({
@@ -66,6 +67,7 @@ export default function DashboardLayout({
     { name: 'Accounts Inventory', href: '/dashboard/credentials', icon: KeyRound },
     { name: 'Purchased Orders', href: '/dashboard/orders', icon: Receipt },
     { name: 'Payment Details', href: '/dashboard/payments', icon: Database },
+    { name: 'Users & Wallets', href: '/dashboard/users', icon: Wallet },
     { name: 'Customer Reviews', href: '/dashboard/reviews', icon: MessageSquareHeart },
   ]
 

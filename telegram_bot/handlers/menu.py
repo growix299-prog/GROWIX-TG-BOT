@@ -89,7 +89,8 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"<tg-emoji emoji-id=\"5346105514575025401\">▶️</tg-emoji> 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴 𝚃𝙷𝙴 '𝙿𝙰𝚈𝙼𝙴𝙽𝚃'.\n"
             f"<tg-emoji emoji-id=\"5346105514575025401\">▶️</tg-emoji> 𝚈𝙾𝚄𝚁 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚆𝙸𝙻𝙻 𝙱𝙴 𝙳𝙴𝙻𝙸𝚅𝙴𝚁𝙴𝙳 𝙸𝙽𝚂𝚃𝙰𝙽𝚃𝙻𝚈.\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"<b>PLEASE CHOOSE A MENU BELOW</b> <tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
+            f"<b>PLEASE CHOOSE A MENU BELOW</b>\n"
+            f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
         )
 
     # Send the bottom reply keyboard first
@@ -228,7 +229,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 f"<tg-emoji emoji-id=\"5346105514575025401\">▶️</tg-emoji> 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴 𝚃𝙷𝙴 '𝙿𝙰𝚈𝙼𝙴𝙽𝚃'.\n"
                 f"<tg-emoji emoji-id=\"5346105514575025401\">▶️</tg-emoji> 𝚈𝙾𝚄𝚁 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚆𝙸𝙻𝙻 𝙱𝙴 𝙳𝙴𝙻𝙸𝚅𝙴𝚁𝙴𝙳 𝙸𝙽𝚂𝚃𝙰𝙽𝚃𝙻𝚈.\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"<b>PLEASE CHOOSE A MENU BELOW</b> <tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
+                f"<b>PLEASE CHOOSE A MENU BELOW</b>\n"
+                f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
             )
             try:
                 await query.edit_message_text(
@@ -294,7 +296,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             f"<tg-emoji emoji-id=\"5346105514575025401\">▶️</tg-emoji> 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴 𝚃𝙷𝙴 '𝙿𝙰𝚈𝙼𝙴𝙽𝚃'.\n"
             f"<tg-emoji emoji-id=\"5346105514575025401\">▶️</tg-emoji> 𝚈𝙾𝚄𝚁 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚆𝙸𝙻𝙻 𝙱𝙴 𝙳𝙴𝙻𝙸𝚅𝙴𝚁𝙴𝙳 𝙸𝙽𝚂𝚃𝙰𝙽𝚃𝙻𝚈.\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"<b>PLEASE CHOOSE A MENU BELOW</b> <tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
+            f"<b>PLEASE CHOOSE A MENU BELOW</b>\n"
+            f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
         )
         try:
             await query.edit_message_text(

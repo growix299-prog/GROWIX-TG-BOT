@@ -66,8 +66,8 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"📌 Join the channel below to continue:"
         )
         keyboard = [
-            [InlineKeyboardButton("🔴 Join Channel 🔴", url="https://t.me/aurexia_store", **{"style": "danger"} if True else {})],
-            [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
+            [InlineKeyboardButton("🔴 Join Channel 🔴", url="https://t.me/+sJB0j6oVALI0MmRh", **{"style": "danger"} if True else {})],
+            [InlineKeyboardButton("<tg-emoji emoji-id=\"5206607081334906820\">✅</tg-emoji> I've Joined", callback_data="check_joined")]
         ]
         await update.message.reply_text(
             text=banner,
@@ -150,12 +150,12 @@ async def support_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"<blockquote>"
         f"<tg-emoji emoji-id=\"5440660757194744323\">🎧</tg-emoji> <b>PREMIUM CUSTOMER SUPPORT</b>\n\n"
         f"Experiencing an issue with a digital product or payment? Our elite support team is ready to assist you.\n\n"
-        f"<tg-emoji emoji-id=\"6255917280224349118\">👨‍💻</tg-emoji> <b>Admin Contact:</b> @ur_aurexia222\n\n"
+        f"<tg-emoji emoji-id=\"6255917280224349118\">👨‍💻</tg-emoji> <b>Admin Contact:</b> @ur_Growixx222\n\n"
         f"<tg-emoji emoji-id=\"5406745015365943482\">📌</tg-emoji> <i>Please provide your Order Reference ID when reaching out for the fastest resolution.</i>"
         f"</blockquote>"
     )
     keyboard = [
-        [InlineKeyboardButton("💬 Chat with Admin", url="https://t.me/ur_aurexia222")],
+        [InlineKeyboardButton("💬 Chat with Admin", url="https://t.me/ur_Growixx222")],
         [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]
     ]
     await update.message.reply_text(
@@ -238,8 +238,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 f"</blockquote>"
             )
             keyboard = [
-                [InlineKeyboardButton("🔴 Join Channel 🔴", url="https://t.me/aurexia_store", **{"style": "danger"} if True else {})],
-                [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
+                [InlineKeyboardButton("🔴 Join Channel 🔴", url="https://t.me/+sJB0j6oVALI0MmRh", **{"style": "danger"} if True else {})],
+                [InlineKeyboardButton("<tg-emoji emoji-id=\"5206607081334906820\">✅</tg-emoji> I've Joined", callback_data="check_joined")]
             ]
             await query.edit_message_text(
                 text=banner,
@@ -258,8 +258,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 f"</blockquote>"
             )
             keyboard = [
-                [InlineKeyboardButton("🔴 Join Channel 🔴", url="https://t.me/aurexia_store", **{"style": "danger"} if True else {})],
-                [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
+                [InlineKeyboardButton("🔴 Join Channel 🔴", url="https://t.me/+sJB0j6oVALI0MmRh", **{"style": "danger"} if True else {})],
+                [InlineKeyboardButton("<tg-emoji emoji-id=\"5206607081334906820\">✅</tg-emoji> I've Joined", callback_data="check_joined")]
             ]
             await query.edit_message_text(
                 text=banner,
@@ -301,8 +301,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 f"</blockquote>"
             )
             keyboard = [
-                [InlineKeyboardButton("🔴 Join Channel 🔴", url="https://t.me/aurexia_store", **{"style": "danger"} if True else {})],
-                [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
+                [InlineKeyboardButton("🔴 Join Channel 🔴", url="https://t.me/+sJB0j6oVALI0MmRh", **{"style": "danger"} if True else {})],
+                [InlineKeyboardButton("<tg-emoji emoji-id=\"5206607081334906820\">✅</tg-emoji> I've Joined", callback_data="check_joined")]
             ]
             await query.edit_message_text(
                 text=banner,
@@ -796,13 +796,13 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             f"<tg-emoji emoji-id=\"5440660757194744323\">🎧</tg-emoji> 𝐏𝐑𝐄𝐌𝐈𝐔𝐌 𝐂𝐔𝐒𝐓𝐎𝐌𝐄𝐑 𝐒𝐔𝐏𝐏𝐎𝐑𝐓\n"
             f"▬▬▬▬▬▬▬▬▬▬▬\n"
             f"Need help with your digital products or payments? Our elite support team is ready to assist you 24/7.\n\n"
-            f"<tg-emoji emoji-id=\"6255917280224349118\">👨‍💻</tg-emoji> 𝗔𝗱𝗺𝗶𝗻 𝗖𝗼𝗻𝘁𝗮𝗰𝘁: @ur_aurexia222\n\n"
+            f"<tg-emoji emoji-id=\"6255917280224349118\">👨‍💻</tg-emoji> 𝗔𝗱𝗺𝗶𝗻 𝗖𝗼𝗻𝘁𝗮𝗰𝘁: @ur_Growixx222\n\n"
             f"<tg-emoji emoji-id=\"5406745015365943482\">📌</tg-emoji> 𝘗𝘭𝘦𝘢𝘴𝘦 𝘬𝘦𝘦𝘱 𝘺𝘰𝘶𝘳 𝘖𝘳𝘥𝘦𝘳 𝘐𝘋 𝘳𝘦𝘢𝘥𝘺 𝘧𝘰𝘳 𝘧𝘢𝘴𝘵𝘦𝘳 𝘳𝘦𝘴𝘰𝘭𝘶𝘵𝘪𝘰𝘯.\n"
             f"▬▬▬▬▬▬▬▬▬▬▬\n"
             f"<tg-emoji emoji-id=\"5222444124698853913\">⬇️</tg-emoji> Click the button below to start a live chat"
         )
         keyboard = [
-            [InlineKeyboardButton("💬 Chat with Admin", url="https://t.me/ur_aurexia222")],
+            [InlineKeyboardButton("💬 Chat with Admin", url="https://t.me/ur_Growixx222")],
             [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]
         ]
         await query.edit_message_text(

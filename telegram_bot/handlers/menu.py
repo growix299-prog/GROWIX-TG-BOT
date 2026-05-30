@@ -155,12 +155,15 @@ async def history_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def support_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /support command."""
     support_text = (
-        f"<blockquote>"
-        f"<tg-emoji emoji-id=\"5440660757194744323\">🎧</tg-emoji> <b>PREMIUM CUSTOMER SUPPORT</b>\n\n"
-        f"Experiencing an issue with a digital product or payment? Our elite support team is ready to assist you.\n\n"
-        f"<tg-emoji emoji-id=\"6255917280224349118\">👨‍💻</tg-emoji> <b>Admin Contact:</b> @ur_Growixx222\n\n"
-        f"<tg-emoji emoji-id=\"5406745015365943482\">📌</tg-emoji> <i>Please provide your Order Reference ID when reaching out for the fastest resolution.</i>"
-        f"</blockquote>"
+        f"<b>CUSTOMER SUPPORT</b> <tg-emoji emoji-id=\"5870692618244984670\">📞</tg-emoji>\n"
+        f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+        f"NEED HELP WITH YOUR DIGITAL PRODUCTS OR PAYMENT ? OUR ELITE SUPPORT TEAM IS READY TO ASSIST YOUR 24/7 <tg-emoji emoji-id=\"5208573502046610594\">🕛</tg-emoji>\n"
+        f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+        f"<b><u>Admin Contact:</u></b>\n"
+        f"@ur_Growixx222 <tg-emoji emoji-id=\"5352825278672412291\">✅</tg-emoji>\n\n"
+        f"PLEASE KEEP YOUR ORDER ID READY FOR FASTER RESOLUTION. <tg-emoji emoji-id=\"5188481279963715781\">🚀</tg-emoji><tg-emoji emoji-id=\"5188481279963715781\">🚀</tg-emoji>\n"
+        f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+        f"CLICK THE BUTTON BELOW TO START THE CHAT <tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
     )
     keyboard = [
         [InlineKeyboardButton("💬 Chat with Admin", url="https://t.me/ur_Growixx222")],
@@ -817,13 +820,15 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
     elif data == "view_support":
         support_text = (
-            f"<tg-emoji emoji-id=\"5440660757194744323\">🎧</tg-emoji> 𝐏𝐑𝐄𝐌𝐈𝐔𝐌 𝐂𝐔𝐒𝐓𝐎𝐌𝐄𝐑 𝐒𝐔𝐏𝐏𝐎𝐑𝐓\n"
-            f"▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"Need help with your digital products or payments? Our elite support team is ready to assist you 24/7.\n\n"
-            f"<tg-emoji emoji-id=\"6255917280224349118\">👨‍💻</tg-emoji> 𝗔𝗱𝗺𝗶𝗻 𝗖𝗼𝗻𝘁𝗮𝗰𝘁: @ur_Growixx222\n\n"
-            f"<tg-emoji emoji-id=\"5406745015365943482\">📌</tg-emoji> 𝘗𝘭𝘦𝘢𝘴𝘦 𝘬𝘦𝘦𝘱 𝘺𝘰𝘶𝘳 𝘖𝘳𝘥𝘦𝘳 𝘐𝘋 𝘳𝘦𝘢𝘥𝘺 𝘧𝘰𝘳 𝘧𝘢𝘴𝘵𝘦𝘳 𝘳𝘦𝘴𝘰𝘭𝘶𝘵𝘪𝘰𝘯.\n"
-            f"▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"<tg-emoji emoji-id=\"5222444124698853913\">⬇️</tg-emoji> Click the button below to start a live chat"
+            f"<b>CUSTOMER SUPPORT</b> <tg-emoji emoji-id=\"5870692618244984670\">📞</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"NEED HELP WITH YOUR DIGITAL PRODUCTS OR PAYMENT ? OUR ELITE SUPPORT TEAM IS READY TO ASSIST YOUR 24/7 <tg-emoji emoji-id=\"5208573502046610594\">🕛</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"<b><u>Admin Contact:</u></b>\n"
+            f"@ur_Growixx222 <tg-emoji emoji-id=\"5352825278672412291\">✅</tg-emoji>\n\n"
+            f"PLEASE KEEP YOUR ORDER ID READY FOR FASTER RESOLUTION. <tg-emoji emoji-id=\"5188481279963715781\">🚀</tg-emoji><tg-emoji emoji-id=\"5188481279963715781\">🚀</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"CLICK THE BUTTON BELOW TO START THE CHAT <tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
         )
         keyboard = [
             [InlineKeyboardButton("💬 Chat with Admin", url="https://t.me/ur_Growixx222")],

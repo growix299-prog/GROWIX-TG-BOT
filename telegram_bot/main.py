@@ -78,10 +78,14 @@ def main():
     application.add_handler(CallbackQueryHandler(handle_callback_query))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_user_text))
 
+    import time
+    logger.info("Waiting 5 seconds for any old instances to shut down...")
+    time.sleep(5)
+    
     logger.info("Bot is active and polling for new messages...")
     
     # Run the bot polling loop
-    application.run_polling()
+    application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()

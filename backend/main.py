@@ -47,7 +47,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["Content-Type", "Authorization", "X-Razorpay-Signature", "X-Admin-API-Key"],
 )
 
@@ -513,3 +513,115 @@ async def admin_delete_user(
     except Exception as e:
         logger.error(f"Error deleting user {telegram_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# ==========================================
+# BROADCAST STOCK ALERT ENDPOINT
+# ==========================================
+
+class BroadcastStockPayload(BaseModel):
+    product_id: str
+    stock_added: int
+    custom_message: Optional[str] = None
+
+@app.post("/api/admin/broadcast-stock")
+async def admin_broadcast_stock(
+    request: Request,
+    payload: BroadcastStockPayload,
+    background_tasks: BackgroundTasks,
+    _auth: bool = Depends(verify_admin_api_key)
+):
+    """Broadcasts a stock alert to ALL registered bot users via Telegram."""
+    client_ip = request.client.host if request.client else "unknown"
+    check_rate_limit(client_ip, max_requests=5, window_seconds=60)
+    
+    db = get_db()
+    
+    # 1. Fetch product details
+    try:
+        prod_resp = db.table("products").select("*").eq("id", payload.product_id).execute()
+        product = prod_resp.data[0] if prod_resp.data else None
+    except Exception as e:
+        logger.error(f"Broadcast: Error fetching product: {str(e)}")
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # 2. Fetch total available stock (UNUSED credentials)
+    try:
+        stock_resp = db.table("credentials").select("id").eq("product_id", payload.product_id).eq("status", "UNUSED").execute()
+        total_stock = len(stock_resp.data) if stock_resp.data else 0
+    except Exception:
+        total_stock = 0
+    
+    # 3. Fetch all users
+    try:
+        users_resp = db.table("users").select("telegram_id").execute()
+        users = users_resp.data or []
+    except Exception as e:
+        logger.error(f"Broadcast: Error fetching users: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch users")
+    
+    if not users:
+        return {"status": "ok", "sent": 0, "total_users": 0, "message": "No users found"}
+    
+    # 4. Build the broadcast message
+    product_name = product["name"]
+    category = product["category"]
+    price = float(product["price"])
+    
+    from telegram_bot.handlers.menu import get_product_emoji
+    emoji = get_product_emoji(product_name)
+    
+    broadcast_msg = (
+        f"🔔 <b>NEW STOCK ALERT!</b> 🔔\n"
+        f"▬▬▬▬▬▬▬▬▬▬▬\n\n"
+        f"{emoji} <b>Product:</b> {product_name}\n"
+        f"🗂️ <b>Category:</b> {category}\n"
+        f"💰 <b>Price:</b> ₹{price:.2f}\n\n"
+        f"📦 <b>Stock Added:</b> {payload.stock_added} accounts\n"
+        f"📊 <b>Total Available:</b> {total_stock} accounts\n\n"
+    )
+    
+    if payload.custom_message:
+        broadcast_msg += f"💬 {payload.custom_message}\n\n"
+    
+    broadcast_msg += (
+        f"▬▬▬▬▬▬▬▬▬▬▬\n"
+        f"🛒 <i>Grab yours before it's gone!</i>"
+    )
+    
+    keyboard = {
+        "inline_keyboard": [
+            [{"text": f"🛒 Buy {product_name} Now", "callback_data": f"prod_{product['id']}"}],
+            [{"text": "🛍️ Browse All Products", "callback_data": "view_products"}]
+        ]
+    }
+    
+    # 5. Send broadcast in background
+    async def send_broadcast():
+        import asyncio
+        sent_count = 0
+        failed_count = 0
+        for user in users:
+            try:
+                await send_telegram_message(user["telegram_id"], broadcast_msg, reply_markup=keyboard)
+                sent_count += 1
+            except Exception as e:
+                logger.error(f"Broadcast failed for {user['telegram_id']}: {str(e)}")
+                failed_count += 1
+            # Small delay to avoid Telegram rate limits (30 msgs/sec)
+            await asyncio.sleep(0.05)
+        logger.info(f"Broadcast complete: {sent_count} sent, {failed_count} failed out of {len(users)} users")
+    
+    background_tasks.add_task(send_broadcast)
+    
+    return {
+        "status": "ok",
+        "total_users": len(users),
+        "product": product_name,
+        "stock_added": payload.stock_added,
+        "total_stock": total_stock,
+        "message": f"Broadcasting to {len(users)} users in background"
+    }
+

@@ -77,8 +77,8 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     banner = (
-            f"HI 🫲<tg-emoji emoji-id=\"5456258317477230911\">😎</tg-emoji>🫱 {html.escape(user.first_name)}\n"
-            f"WELCOME TO <tg-emoji emoji-id=\"5352625743081775722\">🔘</tg-emoji>\n"
+            f"<b>HI</b> 🫲<tg-emoji emoji-id=\"5456258317477230911\">😎</tg-emoji>🫱 <b>{html.escape(user.first_name)}</b>\n"
+            f"<b>WELCOME TO</b> <tg-emoji emoji-id=\"5352625743081775722\">🔘</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬\n"
             f"𝐆𝐀𝐌𝐄𝐒 𝐀𝐍𝐃 𝐎𝐓𝐓 𝐁𝐎𝐓 <tg-emoji emoji-id=\"5314391089514291948\">🤖</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬\n"
@@ -216,8 +216,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         is_member = await check_channel_membership(user.id, context)
         if is_member:
             banner = (
-                f"HI 🫲<tg-emoji emoji-id=\"5456258317477230911\">😎</tg-emoji>🫱 {html.escape(user.first_name)}\n"
-                f"WELCOME TO <tg-emoji emoji-id=\"5352625743081775722\">🔘</tg-emoji>\n"
+                f"<b>HI</b> 🫲<tg-emoji emoji-id=\"5456258317477230911\">😎</tg-emoji>🫱 <b>{html.escape(user.first_name)}</b>\n"
+                f"<b>WELCOME TO</b> <tg-emoji emoji-id=\"5352625743081775722\">🔘</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬\n"
                 f"𝐆𝐀𝐌𝐄𝐒 𝐀𝐍𝐃 𝐎𝐓𝐓 𝐁𝐎𝐓 <tg-emoji emoji-id=\"5314391089514291948\">🤖</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬\n"
@@ -282,8 +282,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             return
 
         banner = (
-            f"HI 🫲<tg-emoji emoji-id=\"5456258317477230911\">😎</tg-emoji>🫱 {html.escape(user.first_name)}\n"
-            f"WELCOME TO <tg-emoji emoji-id=\"5352625743081775722\">🔘</tg-emoji>\n"
+            f"<b>HI</b> 🫲<tg-emoji emoji-id=\"5456258317477230911\">😎</tg-emoji>🫱 <b>{html.escape(user.first_name)}</b>\n"
+            f"<b>WELCOME TO</b> <tg-emoji emoji-id=\"5352625743081775722\">🔘</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬\n"
             f"𝐆𝐀𝐌𝐄𝐒 𝐀𝐍𝐃 𝐎𝐓𝐓 𝐁𝐎𝐓 <tg-emoji emoji-id=\"5314391089514291948\">🤖</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬\n"

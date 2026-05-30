@@ -191,7 +191,17 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
         
     elif text == "↗️ Support":
-        support_text = "<blockquote>ℹ️ <b>PREMIUM CUSTOMER SUPPORT</b> ℹ️\n\n👤 <b>Admin Contact:</b> @ur_Growixx222\n\n<i>Please provide your Order Reference ID when reaching out for the fastest resolution.</i></blockquote>"
+        support_text = (
+            f"<b>CUSTOMER SUPPORT</b> <tg-emoji emoji-id=\"5870692618244984670\">📞</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"NEED HELP WITH YOUR DIGITAL PRODUCTS OR PAYMENT ? OUR ELITE SUPPORT TEAM IS READY TO ASSIST YOUR 24/7 <tg-emoji emoji-id=\"5208573502046610594\">🕛</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"<b><u>Admin Contact:</u></b>\n"
+            f"@ur_Growixx222 <tg-emoji emoji-id=\"5352825278672412291\">✅</tg-emoji>\n\n"
+            f"PLEASE KEEP YOUR ORDER ID READY FOR FASTER RESOLUTION. <tg-emoji emoji-id=\"5188481279963715781\">🚀</tg-emoji><tg-emoji emoji-id=\"5188481279963715781\">🚀</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"CLICK THE BUTTON BELOW TO START THE CHAT <tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
+        )
         await message.reply_text(text=support_text, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("💬 Chat with Admin", url="https://t.me/ur_Growixx222")]]), parse_mode="HTML")
         return
 

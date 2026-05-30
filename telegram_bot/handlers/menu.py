@@ -126,7 +126,7 @@ async def history_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not orders:
         empty_text = (
-            f"<b>ORDER HISTORY</b> <tg-emoji emoji-id=\"4938318633475507037\">📜</tg-emoji>\n"
+            f"<b>PURCHASE HISTORY</b> <tg-emoji emoji-id=\"4938318633475507037\">📜</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
             f"YOU HAVEN'T MADE ANY PURCHASES YET. START SHOPPING TO ACCESS PREMIUM PRODUCTS! <tg-emoji emoji-id=\"5215203655946346044\">🛒</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
@@ -139,7 +139,7 @@ async def history_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     history_text = (
-        f"<b>YOUR RECENT ORDERS</b> <tg-emoji emoji-id=\"4938318633475507037\">📜</tg-emoji>\n"
+        f"<b>YOUR RECENT PURCHASES</b> <tg-emoji emoji-id=\"4938318633475507037\">📜</tg-emoji>\n"
         f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
     )
     for idx, order in enumerate(orders[:10], 1):
@@ -810,7 +810,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         if not orders:
             empty_text = (
-                f"<b>ORDER HISTORY</b> <tg-emoji emoji-id=\"4938318633475507037\">📜</tg-emoji>\n"
+                f"<b>PURCHASE HISTORY</b> <tg-emoji emoji-id=\"4938318633475507037\">📜</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
                 f"YOU HAVEN'T MADE ANY PURCHASES YET. START SHOPPING TO ACCESS PREMIUM PRODUCTS! <tg-emoji emoji-id=\"5215203655946346044\">🛒</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
@@ -823,7 +823,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             return
 
         history_text = (
-            f"<b>YOUR RECENT ORDERS</b> <tg-emoji emoji-id=\"4938318633475507037\">📜</tg-emoji>\n"
+            f"<b>YOUR RECENT PURCHASES</b> <tg-emoji emoji-id=\"4938318633475507037\">📜</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
         )
         for idx, order in enumerate(orders[:10], 1):

@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabaseClient'
 import { Search, RefreshCw, Trash2, Eye, Plus, RotateCcw, X, Users, Wallet, ShoppingCart, ArrowDownCircle } from 'lucide-react'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || ''
-const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_API_KEY || ''
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://nexautomate.onrender.com'
+const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_API_KEY || 'nexus_admin_secret_key_2026_ultra_secure'
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([])
@@ -100,9 +100,19 @@ export default function UsersPage() {
     const tgId = actionModal.user.telegram_id
     const amt = parseFloat(actionAmount)
     try {
-      const cur = parseFloat(actionModal.user.wallet_balance || 0)
-      await supabase.from('users').update({ wallet_balance: cur + amt }).eq('telegram_id', tgId)
-      await supabase.from('wallet_transactions').insert({ telegram_id: tgId, amount: amt, transaction_type: 'DEPOSIT', reference_id: 'ADMIN_CREDIT', description: actionDesc || `Admin credit of ₹${amt.toFixed(2)}` })
+      const res = await fetch(`${API_BASE}/api/admin/users/${tgId}/add-funds`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-API-Key': ADMIN_KEY
+        },
+        body: JSON.stringify({
+          amount: amt,
+          description: actionDesc || `Admin credit of ₹${amt.toFixed(2)}`
+        })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail || 'Failed to add funds')
       
       setActionModal({type: null, user: null})
       setActionAmount('')

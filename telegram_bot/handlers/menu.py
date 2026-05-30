@@ -97,12 +97,19 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text="Loading interface...",
         reply_markup=get_reply_keyboard()
     )
-    # Then send the main menu with inline buttons
-    await update.message.reply_text(
-        text=banner,
-        reply_markup=get_main_menu_keyboard(),
-        parse_mode="HTML"
-    )
+    try:
+        # Then send the main menu with inline buttons
+        await update.message.reply_text(
+            text=banner,
+            reply_markup=get_main_menu_keyboard(),
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        logger.error(f"Failed to send banner: {e}")
+        await update.message.reply_text(
+            text=f"⚠️ Interface Error: {str(e)}\n\nFallback Menu:",
+            reply_markup=get_main_menu_keyboard()
+        )
 
 async def history_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /history command."""
@@ -223,11 +230,17 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 f"▬▬▬▬▬▬▬▬▬▬▬\n"
                 f"PLEASE CHOOSE A MENU BELOW <tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
             )
-            await query.edit_message_text(
-                text=banner,
-                reply_markup=get_main_menu_keyboard(),
-                parse_mode="HTML"
-            )
+            try:
+                await query.edit_message_text(
+                    text=banner,
+                    reply_markup=get_main_menu_keyboard(),
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                await query.edit_message_text(
+                    text=f"⚠️ Interface Error: {str(e)}\n\nFallback Menu:",
+                    reply_markup=get_main_menu_keyboard()
+                )
         else:
             await query.answer("❌ First join the channel!", show_alert=True)
             banner = (
@@ -283,11 +296,17 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             f"▬▬▬▬▬▬▬▬▬▬▬\n"
             f"PLEASE CHOOSE A MENU BELOW <tg-emoji emoji-id=\"5222444124698853913\">⬇️</tg-emoji><tg-emoji emoji-id=\"5222444124698853913\">⬇️</tg-emoji><tg-emoji emoji-id=\"5222444124698853913\">⬇️</tg-emoji>"
         )
-        await query.edit_message_text(
-            text=banner,
-            reply_markup=get_main_menu_keyboard(),
-            parse_mode="HTML"
-        )
+        try:
+            await query.edit_message_text(
+                text=banner,
+                reply_markup=get_main_menu_keyboard(),
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            await query.edit_message_text(
+                text=f"⚠️ Interface Error: {str(e)}\n\nFallback Menu:",
+                reply_markup=get_main_menu_keyboard()
+            )
 
     elif data.startswith("cat_"):
         is_member = await check_channel_membership(user.id, context)

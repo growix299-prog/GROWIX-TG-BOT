@@ -166,7 +166,7 @@ async def support_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     support_text = (
         f"<b>CUSTOMER SUPPORT</b> <tg-emoji emoji-id=\"5870692618244984670\">📞</tg-emoji>\n"
         f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-        f"NEED HELP WITH YOUR DIGITAL PRODUCTS OR PAYMENT ? OUR ELITE SUPPORT TEAM IS READY TO ASSIST YOUR 24/7 <tg-emoji emoji-id=\"5208573502046610594\">🕛</tg-emoji>\n"
+        f"NEED HELP WITH YOUR DIGITAL PRODUCTS OR PAYMENT ? OUR ELITE SUPPORT TEAM IS READY TO ASSIST YOU 24/7 <tg-emoji emoji-id=\"5208573502046610594\">🕛</tg-emoji>\n"
         f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
         f"<b><u>Admin Contact:</u></b>\n"
         f"@ur_Growixx222 <tg-emoji emoji-id=\"5352825278672412291\">✅</tg-emoji>\n\n"
@@ -849,7 +849,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         support_text = (
             f"<b>CUSTOMER SUPPORT</b> <tg-emoji emoji-id=\"5870692618244984670\">📞</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"NEED HELP WITH YOUR DIGITAL PRODUCTS OR PAYMENT ? OUR ELITE SUPPORT TEAM IS READY TO ASSIST YOUR 24/7 <tg-emoji emoji-id=\"5208573502046610594\">🕛</tg-emoji>\n"
+            f"NEED HELP WITH YOUR DIGITAL PRODUCTS OR PAYMENT ? OUR ELITE SUPPORT TEAM IS READY TO ASSIST YOU 24/7 <tg-emoji emoji-id=\"5208573502046610594\">🕛</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
             f"<b><u>Admin Contact:</u></b>\n"
             f"@ur_Growixx222 <tg-emoji emoji-id=\"5352825278672412291\">✅</tg-emoji>\n\n"

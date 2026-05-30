@@ -104,7 +104,7 @@ export default function DashboardLayout({
           </div>
 
           {/* Navigation Links */}
-          <nav className="px-4 space-y-1">
+          <nav className="px-4 space-y-1 pb-6">
             {navigation.map((item) => {
               const isActive = pathname === item.href
               const Icon = item.icon

@@ -191,7 +191,7 @@ export default function UsersPage() {
 
       {/* User Detail Modal */}
       {selectedUser && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-[100]" onClick={() => setSelectedUser(null)}>
+        <div className="fixed inset-0 pl-64 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-[100]" onClick={() => setSelectedUser(null)}>
           <div className="bg-cyber-bg border border-cyber-border rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto relative z-[101]" onClick={e => e.stopPropagation()}>
             <div className="p-6 border-b border-cyber-border flex items-center justify-between">
               <div>
@@ -248,7 +248,7 @@ export default function UsersPage() {
 
       {/* Add Funds Modal */}
       {actionModal.type === 'add' && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-[100]" onClick={() => setActionModal({type:null,user:null})}>
+        <div className="fixed inset-0 pl-64 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-[100]" onClick={() => setActionModal({type:null,user:null})}>
           <div className="bg-cyber-bg border border-cyber-border rounded-2xl w-full max-w-md relative z-[101]" onClick={e => e.stopPropagation()}>
             <div className="p-6 border-b border-cyber-border">
               <h2 className="text-lg font-black text-white font-playfair">➕ Add Funds</h2>

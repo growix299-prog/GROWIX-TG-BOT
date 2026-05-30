@@ -520,7 +520,7 @@ export default function CredentialsPage() {
 
       {/* Edit Credential Modal */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 pl-64 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="w-full max-w-md glass-panel p-8 rounded-2xl glow-border-cyan shadow-glass relative text-xs font-sfpro text-white">
             <h2 className={`${headingStyle} text-xl mb-6`}>Modify Account Credentials</h2>
 

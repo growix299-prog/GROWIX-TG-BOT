@@ -48,21 +48,21 @@ export default function ProductsPage() {
   }, [])
 
   const DEFAULT_PRODUCTS = [
-    { name: 'Netflix', category: 'OTT', price: 199, delivery_type: 'AUTO', active: true },
-    { name: 'YouTube Premium', category: 'OTT', price: 99, delivery_type: 'AUTO', active: true },
-    { name: 'Spotify Premium', category: 'OTT', price: 99, delivery_type: 'AUTO', active: true },
-    { name: 'Amazon Prime', category: 'OTT', price: 99, delivery_type: 'AUTO', active: true },
-    { name: 'Disney+ Hotstar', category: 'OTT', price: 149, delivery_type: 'AUTO', active: true },
-    { name: 'Steam Account', category: 'Games', price: 299, delivery_type: 'AUTO', active: true },
-    { name: 'Zee5', category: 'OTT', price: 79, delivery_type: 'AUTO', active: true },
-    { name: 'Sony Liv', category: 'OTT', price: 89, delivery_type: 'AUTO', active: true },
-    { name: 'ChatGPT Plus', category: 'AI', price: 499, delivery_type: 'AUTO', active: true },
-    { name: 'CapCut Pro', category: 'VideoEditing', price: 149, delivery_type: 'AUTO', active: true },
-    { name: 'Google One', category: 'AI', price: 199, delivery_type: 'AUTO', active: true },
-    { name: 'Canva Pro', category: 'VideoEditing', price: 99, delivery_type: 'AUTO', active: true },
-    { name: 'Crunchyroll', category: 'OTT', price: 99, delivery_type: 'AUTO', active: true },
-    { name: 'Claude AI Pro', category: 'AI', price: 499, delivery_type: 'AUTO', active: true },
-    { name: 'Adobe Creative Cloud', category: 'VideoEditing', price: 599, delivery_type: 'AUTO', active: true },
+    { name: 'Netflix', category: 'OTT', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'YouTube Premium', category: 'OTT', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'Spotify Premium', category: 'OTT', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'Amazon Prime', category: 'OTT', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'Disney+ Hotstar', category: 'OTT', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'Steam Account', category: 'Games', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'Zee5', category: 'OTT', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'Sony Liv', category: 'OTT', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'ChatGPT Plus', category: 'AI', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'CapCut Pro', category: 'VideoEditing', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'Google One', category: 'AI', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'Canva Pro', category: 'VideoEditing', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'Crunchyroll', category: 'OTT', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'Claude AI Pro', category: 'AI', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'Adobe Creative Cloud', category: 'VideoEditing', price: 0, delivery_type: 'AUTO', active: true },
   ]
 
   const injectDefaults = async () => {

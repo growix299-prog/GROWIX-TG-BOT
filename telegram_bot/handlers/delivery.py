@@ -157,22 +157,22 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     
                     # Send credentials via Telegram
                     msg = (
-                        f"<blockquote>"
-                        f"🎉 <b>PAYMENT SUCCESSFUL!</b> 🎉\n\n"
-                        f"✨ Your {qty} login credentials for <b>{product['name']}</b> are ready! 🚀\n\n"
+                        f"<b>PAYMENT SUCCESSFUL</b> <tg-emoji emoji-id=\"6093648802986592017\">✅</tg-emoji>\n"
+                        f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
+                        f"✨ Your {qty} login credentials for <b>{product['name']}</b> are ready! <tg-emoji emoji-id=\"5343553259971822765\">🚀</tg-emoji>\n\n"
                     )
                     
                     for idx, credential in enumerate(credentials, 1):
-                        msg += f"🔑 <b>ACCOUNT {idx}:</b>\n"
+                        msg += f"<b>ACCOUNT {idx}</b> <tg-emoji emoji-id=\"5427009714745517609\">🔑</tg-emoji>\n"
                         msg += f"👤 <b>Username:</b> <code>{credential['email_or_username']}</code>\n"
                         msg += f"🔒 <b>Password:</b> <code>{credential['password']}</code>\n\n"
                         
                     msg += (
-                        f"📧 <i>We have also sent your login credentials to your email <b>{email}</b>.</i>\n\n"
-                        f"⚠️ <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
-                        f"🙏 <b>Thank you {html.escape(user.first_name)} for shopping with us!</b>\n"
+                        f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+                        f"<tg-emoji emoji-id=\"5465665476971471368\">📧</tg-emoji> <i>We have also sent your login credentials to your email <b>{email}</b>.</i>\n\n"
+                        f"<tg-emoji emoji-id=\"5463139369978174548\">⚠️</tg-emoji> <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
+                        f"<tg-emoji emoji-id=\"5206607081334906820\">✅</tg-emoji> <b>Thank you {html.escape(user.first_name)} for shopping with us!</b>\n"
                         f"We'd love to hear your feedback. Please write a review for us!"
-                        f"</blockquote>"
                     )
                     
                     # Send credentials via email (send 1 email with all credentials)

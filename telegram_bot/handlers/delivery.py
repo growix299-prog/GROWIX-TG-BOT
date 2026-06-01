@@ -124,8 +124,9 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Simple regex validation for email
             if not re.match(EMAIL_REGEX, text):
                 await message.reply_text(
-                    "❌ <b>Invalid Email Address</b>\n\n"
-                    "Please send a valid email format (e.g., <code>alex@gmail.com</code>) to register your OTT subscription.",
+                    f"⚠️ <b>Action Required: Pending Delivery</b>\n\n"
+                    f"You have a pending order for <b>{product['name']}</b>!\n"
+                    f"Before you can continue, please type your email address (e.g., <code>alex@gmail.com</code>) below so we can deliver your credentials securely.",
                     parse_mode="HTML"
                 )
                 return

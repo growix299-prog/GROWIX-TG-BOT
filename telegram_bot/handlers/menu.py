@@ -507,10 +507,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         anim_emoji = get_product_animated_emoji(product['name'])
 
         details = (
-            f"<blockquote>"
-            f"📦 <b>PRODUCT DETAIL</b> 📦\n\n"
-            f"🏷️ <b>Name:</b> {anim_emoji} {product['name']}\n"
-            f"🗂️ <b>Category:</b> {product['category']}\n"
+            f"<b>PRODUCT DETAIL</b> 📦\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"🏷️ <b>Name:</b> {anim_emoji} <b>{product['name']}</b>\n"
+            f"🗂️ <b>Category:</b> <b>{product['category']}</b>\n"
         )
         if product['category'] == 'OTT':
             details += (
@@ -526,9 +526,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             f"📊 <b>Stock Status:</b> {stock_label}\n\n"
         )
 
-        details += f"🛒 <i>Ready to purchase? Click 'Buy Now' to generate a secure automated checkout link.</i>"
-        details += "</blockquote>"
-        details += "</blockquote>"
+        details += f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+        details += f"🛒 <i>Ready to purchase? Please select an option below:</i>\n"
+        details += f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
         
         keyboard = []
         if product['category'] == 'OTT':

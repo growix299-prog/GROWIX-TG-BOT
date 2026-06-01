@@ -352,16 +352,17 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard.append([InlineKeyboardButton("❌ Cancel", callback_data="main_menu")])
             
             details = (
-                f"<blockquote>"
-                f"📦 <b>PRODUCT DETAIL</b> 📦\n\n"
-                f"🏷️ <b>Name:</b> {anim_emoji} {selected_product['name']}\n"
-                f"🗂️ <b>Category:</b> {selected_product['category']}\n"
+                f"<b>PRODUCT DETAIL</b> 📦\n"
+                f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+                f"🏷️ <b>Name:</b> {anim_emoji} <b>{selected_product['name']}</b>\n"
+                f"🗂️ <b>Category:</b> <b>{selected_product['category']}</b>\n"
                 f"💰 <b>1 Month:</b> ₹{float(selected_product.get('price_1m') or 0):.2f}\n"
                 f"💰 <b>3 Months:</b> ₹{float(selected_product.get('price_3m') or 0):.2f}\n"
                 f"💰 <b>6 Months:</b> ₹{float(selected_product.get('price_6m') or 0):.2f}\n"
                 f"⚡ <b>Delivery:</b> ✨ INSTANT AUTO-DELIVERY ✨\n\n"
+                f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
                 f"🛒 <i>Please select your desired duration below:</i>\n"
-                f"</blockquote>"
+                f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
             )
             
             await message.reply_text(details, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")

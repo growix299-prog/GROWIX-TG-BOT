@@ -247,7 +247,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             [InlineKeyboardButton("🔙 Back", callback_data="main_menu")]
         ]
         products_text = (
-            f"<b>OUR PRODUCTS</b> 🛒\n"
+            f"<b>OUR PRODUCTS</b> <tg-emoji emoji-id=\"5780560530515171033\">🛒</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
             f"BROWSE OUR CATALOG OF PREMIUM DIGITAL SERVICES <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
@@ -427,7 +427,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         list_text += (
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
-            f"⌨️ <b>Please TYPE the name of the product you want to buy below:</b>\n"
+            f"<tg-emoji emoji-id=\"5344036847871865919\">⌨️</tg-emoji> <b>Please TYPE the name of the product you want to buy below:</b>\n"
             f"<i>(Example: {example_prod})</i>"
         )
 
@@ -451,7 +451,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         example_prod = category_examples.get(category, "Netflix")
         prompt = (
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
-            f"⌨️ <b>Please TYPE the name of the product you want to buy below:</b>\n"
+            f"<tg-emoji emoji-id=\"5344036847871865919\">⌨️</tg-emoji> <b>Please TYPE the name of the product you want to buy below:</b>\n"
             f"<i>(Example: {example_prod})</i>"
         )
         await query.edit_message_text(
@@ -615,7 +615,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         await query.edit_message_text(
             f"✅ <b>{product['name']}{duration_text}</b> is in stock!\n\n"
             f"📦 <b>Available Accounts:</b> {len(stock_check.data) if stock_check.data else 0}\n\n"
-            f"⌨️ <b>How many accounts do you want to buy?</b>\n"
+            f"<tg-emoji emoji-id=\"5344036847871865919\">⌨️</tg-emoji> <b>How many accounts do you want to buy?</b>\n"
             f"<i>(Type a number, e.g., 1 or 2)</i>",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode="HTML"

@@ -76,10 +76,11 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         checkout_url = pay_res.get("short_url")
         
         deposit_confirm_text = (
-            f"<tg-emoji emoji-id=\"6093648802986592017\">✅</tg-emoji> <b>Deposit Link Generated!</b>\n\n"
-            f"<tg-emoji emoji-id=\"6230853345733510932\">💰</tg-emoji> <b>Amount:</b> ₹{amount:.2f}\n\n"
-            f"Click the button below to complete your deposit securely via Razorpay.\n"
-            f"Your wallet will be credited instantly after payment confirmation."
+            f"<b>DEPOSIT INITIATED</b> <tg-emoji emoji-id=\"6230853345733510932\">💰</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
+            f"<b>Amount:</b> ₹{amount:.2f}\n\n"
+            f"<i>Click the button below to complete your deposit securely via Razorpay.\n"
+            f"Your wallet will be credited instantly after payment confirmation.</i>"
         )
         
         pay_keyboard = [

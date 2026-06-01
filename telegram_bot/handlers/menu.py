@@ -417,10 +417,18 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             emoji = get_product_animated_emoji(prod['name'])
             list_text += f"{emoji} <b>{prod['name']}</b>\n\n"
         
+        category_examples = {
+            "OTT": "Netflix",
+            "Games": "Steam",
+            "AI": "ChatGPT",
+            "VideoEditing": "CapCut"
+        }
+        example_prod = category_examples.get(category, "Netflix")
+
         list_text += (
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
             f"⌨️ <b>Please TYPE the name of the product you want to buy below:</b>\n"
-            f"<i>(Example: Netflix)</i>"
+            f"<i>(Example: {example_prod})</i>"
         )
 
         keyboard = [[InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]]

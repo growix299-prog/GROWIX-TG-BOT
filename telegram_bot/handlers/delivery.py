@@ -225,7 +225,15 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         matches = difflib.get_close_matches(text.lower(), product_names.keys(), n=1, cutoff=0.3)
         
         if not matches:
-            await message.reply_text("❌ Product not found. Please check the spelling and try typing again.\n<i>(Example: Netflix)</i>", parse_mode="HTML")
+            category_name = context.user_data.get('awaiting_product_selection', 'OTT')
+            category_examples = {
+                "OTT": "Netflix",
+                "Games": "Steam",
+                "AI": "ChatGPT",
+                "VideoEditing": "CapCut"
+            }
+            example_prod = category_examples.get(category_name, "Netflix")
+            await message.reply_text(f"❌ Product not found. Please check the spelling and try typing again.\n<i>(Example: {example_prod})</i>", parse_mode="HTML")
             return
             
         matched_name = matches[0]

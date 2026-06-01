@@ -50,7 +50,8 @@ products = [
     {'name': 'Canva', 'category': 'VideoEditing', 'price': 99.0, 'active': True},
     {'name': 'Crunchyroll', 'category': 'OTT', 'price': 99.0, 'active': True},
     {'name': 'Claude AI', 'category': 'AI', 'price': 199.0, 'active': True},
-    {'name': 'Adobe Creative Cloud', 'category': 'VideoEditing', 'price': 499.0, 'active': True}
+    {'name': 'Adobe Creative Cloud', 'category': 'VideoEditing', 'price': 499.0, 'active': True},
+    {'name': 'Picsart', 'category': 'VideoEditing', 'price': 0, 'active': True}
 ]
 
 for p in products:

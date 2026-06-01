@@ -73,8 +73,8 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
             
-        checkout_url = pay_res["payment_link"]
-        order_id = pay_res["order_id"]
+        checkout_url = pay_res.get("short_url")
+        order_id = pay_res.get("payment_link_id")
         
         supabase.table("wallet_transactions").insert({
             "telegram_id": user.id,

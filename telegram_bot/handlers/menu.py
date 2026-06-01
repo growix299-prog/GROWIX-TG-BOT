@@ -128,7 +128,7 @@ async def history_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         empty_text = (
             f"<b>PURCHASE HISTORY</b> <tg-emoji emoji-id=\"4938318633475507037\">📜</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"YOU HAVEN'T MADE ANY PURCHASES YET. START SHOPPING TO ACCESS PREMIUM PRODUCTS! <tg-emoji emoji-id=\"5215203655946346044\">🛒</tg-emoji>\n"
+            f"YOU HAVEN'T MADE ANY PURCHASES YET. START SHOPPING TO ACCESS PREMIUM PRODUCTS! 🛒\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
         )
         await update.message.reply_text(
@@ -247,7 +247,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             [InlineKeyboardButton("🔙 Back", callback_data="main_menu")]
         ]
         products_text = (
-            f"<b>OUR PRODUCTS</b> <tg-emoji emoji-id=\"5780560530515171033\">🛒</tg-emoji>\n"
+            f"<b>OUR PRODUCTS</b> 🛒\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
             f"BROWSE OUR CATALOG OF PREMIUM DIGITAL SERVICES <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
@@ -399,7 +399,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         if not products:
             keyboard = [[InlineKeyboardButton("🔙 Back to Menu", callback_data="main_menu")]]
             await query.edit_message_text(
-                text=f"<tg-emoji emoji-id=\"5215203655946346044\">🛒</tg-emoji> <b>Available {category} Products:</b>\n\nCurrently out of stock. Please check back later!",
+                text=f"🛒 <b>Available {category} Products:</b>\n\nCurrently out of stock. Please check back later!",
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode="HTML"
             )
@@ -409,7 +409,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         context.user_data['awaiting_product_selection'] = category
 
         list_text = (
-            f"<b>{category.upper()} CATALOG</b> <tg-emoji emoji-id=\"5215203655946346044\">🛒</tg-emoji>\n"
+            f"<b>{category.upper()} CATALOG</b> 🛒\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
         )
 
@@ -962,7 +962,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             empty_text = (
                 f"<b>PURCHASE HISTORY</b> <tg-emoji emoji-id=\"5940804519083383006\">📜</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"YOU HAVEN'T MADE ANY PURCHASES YET. START SHOPPING TO ACCESS PREMIUM PRODUCTS! <tg-emoji emoji-id=\"6230853345733510932\">🛒</tg-emoji>\n"
+                f"YOU HAVEN'T MADE ANY PURCHASES YET. START SHOPPING TO ACCESS PREMIUM PRODUCTS! 🛒\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
             )
             await query.edit_message_text(

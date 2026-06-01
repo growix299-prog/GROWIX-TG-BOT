@@ -155,11 +155,15 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         
                     update_order_completed(active_order["id"], "DELIVERED")
                     
+                    months = active_order.get("subscription_months", 0)
+                    duration_text = f" ({months} Months)" if product["category"] == "OTT" and months > 0 else ""
+                    product_display_name = f"{product['name']}{duration_text}"
+                    
                     # Send credentials via Telegram
                     msg = (
                         f"<b>PAYMENT SUCCESSFUL</b> <tg-emoji emoji-id=\"6093648802986592017\">✅</tg-emoji>\n"
                         f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
-                        f"✨ Your {qty} login credentials for <b>{product['name']}</b> are ready! <tg-emoji emoji-id=\"5343553259971822765\">🚀</tg-emoji>\n\n"
+                        f"✨ Your {qty} login credentials for <b>{product_display_name}</b> are ready! <tg-emoji emoji-id=\"5343553259971822765\">🚀</tg-emoji>\n\n"
                     )
                     
                     for idx, credential in enumerate(credentials, 1):
@@ -182,7 +186,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         passwords = "\n".join([c["password"] for c in credentials])
                         await send_game_credential_email(
                             to_email=email,
-                            product_name=f"{product['name']} (x{qty})",
+                            product_name=f"{product_display_name} (x{qty})",
                             order_id=active_order["id"],
                             username=usernames,
                             password=passwords

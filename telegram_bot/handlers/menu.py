@@ -431,7 +431,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             f"<i>(Example: {example_prod})</i>"
         )
 
-        keyboard = [[InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]]
+        keyboard = [[InlineKeyboardButton("🔙 Back to Products", callback_data="view_products")]]
 
         await query.edit_message_text(
             text=list_text,

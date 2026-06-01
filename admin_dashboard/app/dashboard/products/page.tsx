@@ -10,6 +10,10 @@ export default function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   
+  // Filters
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedFilter, setSelectedFilter] = useState('All')
+  
   // Form fields
   const [name, setName] = useState('')
   const [category, setCategory] = useState('Games')
@@ -249,6 +253,28 @@ export default function ProductsPage() {
         </div>
       </div>
 
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center glass-panel p-4 rounded-xl border border-cyber-border">
+        <input 
+          type="text" 
+          placeholder="Search products by name..." 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="bg-black/50 border border-cyber-border rounded-lg px-4 py-2 text-white w-full sm:w-64 font-sfpro text-sm outline-none focus:border-yellow-500 transition-colors"
+        />
+        <select 
+          value={selectedFilter}
+          onChange={(e) => setSelectedFilter(e.target.value)}
+          className="bg-black/50 border border-cyber-border rounded-lg px-4 py-2 text-white w-full sm:w-48 font-sfpro text-sm outline-none focus:border-yellow-500 transition-colors"
+        >
+          <option value="All">All Categories</option>
+          <option value="OTT">OTT</option>
+          <option value="Games">Games</option>
+          <option value="AI">AI</option>
+          <option value="VideoEditing">Video Editing</option>
+        </select>
+      </div>
+
       {loading ? (
         <div className="h-96 flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
@@ -261,8 +287,10 @@ export default function ProductsPage() {
               <span>Catalog Empty. Create products or load defaults to start!</span>
             </div>
           ) : (
-            ['OTT', 'Games', 'AI', 'VideoEditing'].map((cat) => {
-              const catProducts = products.filter(p => p.category === cat);
+            ['OTT', 'Games', 'AI', 'VideoEditing']
+              .filter(cat => selectedFilter === 'All' || cat === selectedFilter)
+              .map((cat) => {
+              const catProducts = products.filter(p => p.category === cat && p.name.toLowerCase().includes(searchQuery.toLowerCase()));
               return (
                 <div key={cat} className="space-y-4">
                   <div className="flex items-center justify-between border-b border-cyber-border/40 pb-2">

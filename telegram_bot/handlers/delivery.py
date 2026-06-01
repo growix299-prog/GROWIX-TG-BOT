@@ -74,32 +74,21 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
             
         checkout_url = pay_res.get("short_url")
-        order_id = pay_res.get("payment_link_id")
         
-        supabase.table("wallet_transactions").insert({
-            "telegram_id": user.id,
-            "amount": amount,
-            "type": "DEPOSIT",
-            "status": "PENDING",
-            "razorpay_order_id": order_id
-        }).execute()
-        
-        success_text = (
-            f"💳 <b>WALLET DEPOSIT INITIATED</b>\n"
-            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"<b>Amount:</b> ₹{amount:.2f}\n"
-            f"<b>Order ID:</b> {order_id}\n"
-            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"Click the button below to complete your payment. Your wallet balance will update automatically once successful."
+        deposit_confirm_text = (
+            f"<tg-emoji emoji-id=\"6093648802986592017\">✅</tg-emoji> <b>Deposit Link Generated!</b>\n\n"
+            f"<tg-emoji emoji-id=\"6230853345733510932\">💰</tg-emoji> <b>Amount:</b> ₹{amount:.2f}\n\n"
+            f"Click the button below to complete your deposit securely via Razorpay.\n"
+            f"Your wallet will be credited instantly after payment confirmation."
         )
         
         pay_keyboard = [
-            [InlineKeyboardButton("🔗 Pay Now", url=checkout_url)],
-            [InlineKeyboardButton("🔙 Back to Wallet", callback_data="view_wallet")]
+            [InlineKeyboardButton("🔗 Pay & Deposit via Razorpay", url=checkout_url)],
+            [InlineKeyboardButton("❌ Cancel", callback_data="view_wallet")]
         ]
         
         await loading_msg.edit_text(
-            text=success_text,
+            text=deposit_confirm_text,
             reply_markup=InlineKeyboardMarkup(pay_keyboard),
             parse_mode="HTML"
         )

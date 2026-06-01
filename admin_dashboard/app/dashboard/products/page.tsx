@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabaseClient'
-import { ShoppingBag, Plus, Trash2, Edit2, Check, X, ShieldAlert, Layers } from 'lucide-react'
+import { ShoppingBag, Plus, Trash2, Edit2, Check, X, ShieldAlert, Layers, Download } from 'lucide-react'
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([])
@@ -46,6 +46,36 @@ export default function ProductsPage() {
       if (activeTimer) clearInterval(activeTimer)
     }
   }, [])
+
+  const DEFAULT_PRODUCTS = [
+    { name: 'Netflix', category: 'OTT', price: 199, delivery_type: 'AUTO', active: true },
+    { name: 'YouTube Premium', category: 'OTT', price: 99, delivery_type: 'AUTO', active: true },
+    { name: 'Spotify Premium', category: 'OTT', price: 99, delivery_type: 'AUTO', active: true },
+    { name: 'Amazon Prime', category: 'OTT', price: 99, delivery_type: 'AUTO', active: true },
+    { name: 'Disney+ Hotstar', category: 'OTT', price: 149, delivery_type: 'AUTO', active: true },
+    { name: 'Steam Account', category: 'Games', price: 299, delivery_type: 'AUTO', active: true },
+    { name: 'Zee5', category: 'OTT', price: 79, delivery_type: 'AUTO', active: true },
+    { name: 'Sony Liv', category: 'OTT', price: 89, delivery_type: 'AUTO', active: true },
+    { name: 'ChatGPT Plus', category: 'AI', price: 499, delivery_type: 'AUTO', active: true },
+    { name: 'CapCut Pro', category: 'VideoEditing', price: 149, delivery_type: 'AUTO', active: true },
+    { name: 'Google One', category: 'AI', price: 199, delivery_type: 'AUTO', active: true },
+    { name: 'Canva Pro', category: 'VideoEditing', price: 99, delivery_type: 'AUTO', active: true },
+    { name: 'Crunchyroll', category: 'OTT', price: 99, delivery_type: 'AUTO', active: true },
+    { name: 'Claude AI Pro', category: 'AI', price: 499, delivery_type: 'AUTO', active: true },
+    { name: 'Adobe Creative Cloud', category: 'VideoEditing', price: 599, delivery_type: 'AUTO', active: true },
+  ]
+
+  const injectDefaults = async () => {
+    try {
+      setLoading(true)
+      const { error } = await supabase.from('products').insert(DEFAULT_PRODUCTS)
+      if (error) throw error
+      fetchProducts()
+    } catch (err: any) {
+      alert("Error injecting defaults: " + err.message)
+      setLoading(false)
+    }
+  }
 
   const openAddModal = () => {
     setEditingProduct(null)
@@ -199,13 +229,24 @@ export default function ProductsPage() {
           <h1 className={`${headingStyle} text-3xl`}>Catalog Manager</h1>
           <p className="text-xs text-gray-500 font-sfpro mt-1 uppercase tracking-widest">Create, modify, and monitor active products</p>
         </div>
-        <button
-          onClick={openAddModal}
-          className="flex items-center gap-2 px-5 py-2.5 bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg text-xs font-bold uppercase tracking-widest shadow-glow-yellow transition-all font-sfpro active:scale-[0.98]"
-        >
-          <Plus className="w-4.5 h-4.5" />
-          <span>Deploy Product</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {products.length === 0 && !loading && (
+            <button
+              onClick={injectDefaults}
+              className="flex items-center gap-2 px-5 py-2.5 bg-cyan-900/60 hover:bg-cyan-800 text-cyan-400 border border-cyan-500/30 rounded-lg text-xs font-bold uppercase tracking-widest transition-all font-sfpro active:scale-[0.98]"
+            >
+              <Download className="w-4.5 h-4.5" />
+              <span>Load Default List</span>
+            </button>
+          )}
+          <button
+            onClick={openAddModal}
+            className="flex items-center gap-2 px-5 py-2.5 bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg text-xs font-bold uppercase tracking-widest shadow-glow-yellow transition-all font-sfpro active:scale-[0.98]"
+          >
+            <Plus className="w-4.5 h-4.5" />
+            <span>Deploy Product</span>
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -213,75 +254,110 @@ export default function ProductsPage() {
           <div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-12">
           {products.length === 0 ? (
             <div className="col-span-full glass-panel py-16 text-center text-gray-500 uppercase tracking-widest text-xs font-sfpro border border-cyber-border rounded-xl">
               <ShoppingBag className="w-12 h-12 mx-auto mb-4 text-gray-600 animate-pulse" />
-              <span>Catalog Empty. Create products to start!</span>
+              <span>Catalog Empty. Create products or load defaults to start!</span>
             </div>
           ) : (
-            products.map((prod) => (
-              <div 
-                key={prod.id} 
-                className={`glass-panel p-6 rounded-xl relative transition-all overflow-hidden flex flex-col justify-between h-48 border ${
-                  prod.active ? 'border-cyber-border/80 hover:border-yellow-500/50 hover:shadow-glow-yellow/5' : 'border-red-950/40 opacity-60'
-                }`}
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-black font-sfpro uppercase ${
-                      prod.category === 'OTT' 
-                        ? 'bg-purple-950/80 text-purple-400 border border-purple-500/20' 
-                        : prod.category === 'AI'
-                        ? 'bg-blue-950/80 text-blue-400 border border-blue-500/20'
-                        : prod.category === 'VideoEditing'
-                        ? 'bg-pink-950/80 text-pink-400 border border-pink-500/20'
-                        : 'bg-yellow-950/80 text-yellow-400 border border-yellow-500/20'
-                    }`}>
-                      {prod.category === 'VideoEditing' ? 'VIDEO EDITING' : prod.category}
-                    </span>
-                    <span className="text-lg font-black font-sfpro text-emerald-400">
-                      ₹{parseFloat(prod.price).toFixed(2)}
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold text-white tracking-wide truncate mb-1">{prod.name}</h3>
-                  <p className="text-[10px] text-gray-500 font-sfpro uppercase tracking-wider flex items-center gap-1.5">
-                    <Layers className="w-3.5 h-3.5 text-gray-500" />
-                    <span>Delivery: {prod.delivery_type === 'AUTO' ? 'Auto-Credential Dispatch' : 'Manual Setup Email'}</span>
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-cyber-border/30 mt-4">
-                  <button
-                    onClick={() => toggleActive(prod)}
-                    className={`flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-bold tracking-wider uppercase font-sfpro transition-all ${
-                      prod.active 
-                        ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-950' 
-                        : 'bg-red-950/60 text-red-400 border border-red-500/20 hover:bg-red-950'
-                    }`}
-                  >
-                    {prod.active ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
-                    <span>{prod.active ? 'Active' : 'Offline'}</span>
-                  </button>
-
-                  <div className="flex items-center gap-2">
+            ['OTT', 'Games', 'AI', 'VideoEditing'].map((cat) => {
+              const catProducts = products.filter(p => p.category === cat);
+              return (
+                <div key={cat} className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-cyber-border/40 pb-2">
+                    <h2 className="text-xl font-bold text-white tracking-wider font-playfair uppercase">
+                      {cat === 'VideoEditing' ? 'VIDEO EDITING' : cat}
+                    </h2>
                     <button
-                      onClick={() => openEditModal(prod)}
-                      className="p-2 bg-cyber-bg hover:bg-yellow-950/30 text-gray-400 hover:text-yellow-400 border border-cyber-border rounded-lg transition-all"
+                      onClick={() => {
+                        setEditingProduct(null)
+                        setName('')
+                        setCategory(cat)
+                        setPrice('')
+                        setDeliveryType('AUTO')
+                        setActive(true)
+                        setFormError(null)
+                        setIsModalOpen(true)
+                      }}
+                      className="text-[10px] text-yellow-500 hover:text-yellow-400 font-bold uppercase tracking-widest flex items-center gap-1 transition-all"
                     >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => startSoftDelete(prod)}
-                      className="p-2 bg-cyber-bg hover:bg-red-950/30 text-gray-400 hover:text-red-400 border border-cyber-border rounded-lg transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
+                      <Plus className="w-3.5 h-3.5" /> Add New
                     </button>
                   </div>
-                </div>
 
-              </div>
-            ))
+                  {catProducts.length === 0 ? (
+                    <div className="text-gray-600 text-xs py-6 text-center border border-dashed border-cyber-border/30 rounded-lg font-sfpro uppercase tracking-widest">
+                      No active {cat} items
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {catProducts.map((prod) => (
+                        <div 
+                          key={prod.id} 
+                          className={`glass-panel p-6 rounded-xl relative transition-all overflow-hidden flex flex-col justify-between h-48 border ${
+                            prod.active ? 'border-cyber-border/80 hover:border-yellow-500/50 hover:shadow-glow-yellow/5' : 'border-red-950/40 opacity-60'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between mb-3">
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-black font-sfpro uppercase ${
+                                prod.category === 'OTT' 
+                                  ? 'bg-purple-950/80 text-purple-400 border border-purple-500/20' 
+                                  : prod.category === 'AI'
+                                  ? 'bg-blue-950/80 text-blue-400 border border-blue-500/20'
+                                  : prod.category === 'VideoEditing'
+                                  ? 'bg-pink-950/80 text-pink-400 border border-pink-500/20'
+                                  : 'bg-yellow-950/80 text-yellow-400 border border-yellow-500/20'
+                              }`}>
+                                {prod.category === 'VideoEditing' ? 'VIDEO EDITING' : prod.category}
+                              </span>
+                              <span className="text-lg font-black font-sfpro text-emerald-400">
+                                ₹{parseFloat(prod.price).toFixed(2)}
+                              </span>
+                            </div>
+                            <h3 className="text-base font-bold text-white tracking-wide truncate mb-1">{prod.name}</h3>
+                            <p className="text-[10px] text-gray-500 font-sfpro uppercase tracking-wider flex items-center gap-1.5">
+                              <Layers className="w-3.5 h-3.5 text-gray-500" />
+                              <span>Delivery: {prod.delivery_type === 'AUTO' ? 'Auto-Credential Dispatch' : 'Manual Setup Email'}</span>
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-4 border-t border-cyber-border/30 mt-4">
+                            <button
+                              onClick={() => toggleActive(prod)}
+                              className={`flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-bold tracking-wider uppercase font-sfpro transition-all ${
+                                prod.active 
+                                  ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-950' 
+                                  : 'bg-red-950/60 text-red-400 border border-red-500/20 hover:bg-red-950'
+                              }`}
+                            >
+                              {prod.active ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
+                              <span>{prod.active ? 'Active' : 'Offline'}</span>
+                            </button>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => openEditModal(prod)}
+                                className="p-2 bg-cyber-bg hover:bg-yellow-950/30 text-gray-400 hover:text-yellow-400 border border-cyber-border rounded-lg transition-all"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => startSoftDelete(prod)}
+                                className="p-2 bg-cyber-bg hover:bg-red-950/30 text-gray-400 hover:text-red-400 border border-cyber-border rounded-lg transition-all"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })
           )}
         </div>
       )}

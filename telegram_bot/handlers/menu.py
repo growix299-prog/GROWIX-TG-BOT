@@ -439,6 +439,27 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             parse_mode="HTML"
         )
 
+    elif data.startswith("type_again_"):
+        category = data.split("type_again_")[1]
+        context.user_data['awaiting_product_selection'] = category
+        category_examples = {
+            "OTT": "Netflix",
+            "Games": "Steam",
+            "AI": "ChatGPT",
+            "VideoEditing": "CapCut"
+        }
+        example_prod = category_examples.get(category, "Netflix")
+        prompt = (
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
+            f"⌨️ <b>Please TYPE the name of the product you want to buy below:</b>\n"
+            f"<i>(Example: {example_prod})</i>"
+        )
+        await query.edit_message_text(
+            text=prompt,
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back to Products", callback_data=f"cat_{category}")]]),
+            parse_mode="HTML"
+        )
+
     elif data.startswith("prod_"):
         product_id = data.split("_")[1]
         

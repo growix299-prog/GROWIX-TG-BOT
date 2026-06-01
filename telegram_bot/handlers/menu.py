@@ -822,7 +822,12 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         product_id = parts[1]
         qty = int(parts[2]) if len(parts) > 2 else 1
         
-        await query.edit_message_text("<blockquote>⏳ <i>Securing your order & generating payment gateway...</i></blockquote>", parse_mode="HTML")
+        loading_text = (
+            f"<b>ORDER INITIATED</b> <tg-emoji emoji-id=\"6230853345733510932\">💰</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
+            f"<i>⏳ Securing your order & generating payment gateway...</i>"
+        )
+        await query.edit_message_text(text=loading_text, parse_mode="HTML")
 
         try:
             response = supabase.table("products").select("*").eq("id", product_id).execute()
@@ -831,12 +836,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             product = None
 
         if not product:
-            await query.edit_message_text("<blockquote>❌ Product not found.</blockquote>", parse_mode="HTML")
+            await query.edit_message_text("❌ <b>Product not found.</b>", parse_mode="HTML")
             return
 
         price = float(product["price"]) * qty
-        from telegram_bot.services.payment_gateway import create_payment_link
-        from telegram_bot.services.order_service import create_order
         
         pay_res = await create_payment_link(
             amount=price,
@@ -848,7 +851,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         if not pay_res.get("success"):
             await query.edit_message_text(
-                text=f"<blockquote>❌ <b>Error generating payment link:</b>\n<code>{pay_res.get('error')}</code></blockquote>",
+                text=f"❌ <b>Error generating payment link:</b>\n<code>{pay_res.get('error')}</code>",
                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]]),
                 parse_mode="HTML"
             )
@@ -866,9 +869,12 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         )
 
         checkout_text = (
-            f"✅ <b>Order Generated Successfully!</b>\n\n"
-            f"🔖 <b>Order Ref:</b> <code>{payment_id}</code>\n\n"
-            f"Click the button below to pay securely. Once completed, your product will be delivered instantly."
+            f"<b>ORDER GENERATED</b> <tg-emoji emoji-id=\"6093648802986592017\">✅</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
+            f"<b>Order Ref:</b> <code>{payment_id}</code>\n"
+            f"<b>Product:</b> {product['name']} (x{qty})\n"
+            f"<b>Amount:</b> ₹{price:.2f}\n\n"
+            f"<i>Click the button below to pay securely. Once completed, your product will be delivered instantly.</i>"
         )
 
         keyboard = [

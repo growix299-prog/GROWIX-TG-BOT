@@ -202,6 +202,7 @@ def get_product_emoji(name):
     if 'crunchyroll' in n: return '🟠'
     if 'claude' in n: return '🧠'
     if 'adobe' in n or 'creative' in n: return '🎨'
+    if 'picsart' in n: return '🎨'
     return '🔹'
 
 def get_product_animated_emoji(name):
@@ -221,6 +222,7 @@ def get_product_animated_emoji(name):
     if 'crunchyroll' in n: return '<tg-emoji emoji-id="6231196182907983273">🟠</tg-emoji>'
     if 'claude' in n: return '<tg-emoji emoji-id="5899837428797020489">🧠</tg-emoji>'
     if 'adobe' in n or 'creative' in n: return '<tg-emoji emoji-id="5879753496000991296">🎨</tg-emoji>'
+    if 'picsart' in n: return '<tg-emoji emoji-id="5877624510777135360">🎨</tg-emoji>'
     return '<tg-emoji emoji-id="5352625743081775722">🔹</tg-emoji>'
 
 async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -245,9 +247,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             [InlineKeyboardButton("🔙 Back", callback_data="main_menu")]
         ]
         products_text = (
-            f"<b>OUR PRODUCTS</b> <tg-emoji emoji-id=\"5215203655946346044\">🛒</tg-emoji>\n"
+            f"<b>OUR PRODUCTS</b> <tg-emoji emoji-id=\"5780560530515171033\">🛒</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"BROWSE OUR CATALOG OF PREMIUM DIGITAL SERVICES <tg-emoji emoji-id=\"5352825278672412291\">✅</tg-emoji>\n"
+            f"BROWSE OUR CATALOG OF PREMIUM DIGITAL SERVICES <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
             f"PLEASE SELECT A CATEGORY BELOW <tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
         )
@@ -413,7 +415,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         for prod in products:
             emoji = get_product_animated_emoji(prod['name'])
-            list_text += f"{emoji} <b>{prod['name']}</b> - ₹{float(prod['price']):.2f}\n"
+            list_text += f"{emoji} <b>{prod['name']}</b>\n\n"
         
         list_text += (
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
@@ -629,12 +631,12 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     elif data == "view_wallet":
         balance = get_wallet_balance(user.id)
         wallet_text = (
-            f"<b>MY WALLET</b> <tg-emoji emoji-id=\"5271604874419647061\">👛</tg-emoji>\n"
+            f"<b>MY WALLET</b> <tg-emoji emoji-id=\"5343777479091831702\">👛</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
             f"<b>CURRENT BALANCE:</b> ₹{balance:.2f} <tg-emoji emoji-id=\"5350710934992069206\">💰</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"ADD FUNDS TO YOUR WALLET FOR INSTANT PURCHASES <tg-emoji emoji-id=\"5352825278672412291\">✅</tg-emoji>\n"
-            f"MINIMUM DEPOSIT: ₹100.00\n"
+            f"ADD FUNDS TO YOUR WALLET FOR INSTANT PURCHASES\n"
+            f"MINIMUM DEPOSIT: ₹1 <tg-emoji emoji-id=\"5417924076503062111\">✅</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
             f"CHOOSE AN OPTION BELOW <tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
         )
@@ -651,19 +653,19 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             f"<tg-emoji emoji-id=\"5206607081334906820\">✅</tg-emoji> 𝐀𝐃𝐃 𝐅𝐔𝐍𝐃𝐒\n"
             f"▬▬▬▬▬▬▬▬▬▬▬\n\n"
             f"Choose an amount to deposit into your wallet:\n\n"
-            f"Minimum: ₹100 | Maximum: ₹10,000\n"
+            f"Minimum: ₹1 | Maximum: ₹10,000\n"
             f"▬▬▬▬▬▬▬▬▬▬▬"
         )
         keyboard = [
             [
-                InlineKeyboardButton("₹100", callback_data="deposit_100"),
-                InlineKeyboardButton("₹200", callback_data="deposit_200"),
-                InlineKeyboardButton("₹500", callback_data="deposit_500")
+                InlineKeyboardButton("₹1", callback_data="deposit_1"),
+                InlineKeyboardButton("₹10", callback_data="deposit_10"),
+                InlineKeyboardButton("₹50", callback_data="deposit_50")
             ],
             [
-                InlineKeyboardButton("₹1000", callback_data="deposit_1000"),
-                InlineKeyboardButton("₹2000", callback_data="deposit_2000"),
-                InlineKeyboardButton("₹5000", callback_data="deposit_5000")
+                InlineKeyboardButton("₹100", callback_data="deposit_100"),
+                InlineKeyboardButton("₹500", callback_data="deposit_500"),
+                InlineKeyboardButton("₹1000", callback_data="deposit_1000")
             ],
             [InlineKeyboardButton("🔙 Back to Wallet", callback_data="view_wallet")]
         ]
@@ -672,8 +674,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
     elif data.startswith("deposit_"):
         amount = int(data.split("_")[1])
-        if amount < 100:
-            await query.answer("❌ Minimum deposit is ₹100!", show_alert=True)
+        if amount < 1:
+            await query.answer("❌ Minimum deposit is ₹1!", show_alert=True)
             return
 
         await query.edit_message_text("<blockquote>⏳ <i>Generating secure payment link for wallet deposit...</i></blockquote>", parse_mode="HTML")
@@ -835,9 +837,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         if not orders:
             empty_text = (
-                f"<b>PURCHASE HISTORY</b> <tg-emoji emoji-id=\"4938318633475507037\">📜</tg-emoji>\n"
+                f"<b>PURCHASE HISTORY</b> <tg-emoji emoji-id=\"5940804519083383006\">📜</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"YOU HAVEN'T MADE ANY PURCHASES YET. START SHOPPING TO ACCESS PREMIUM PRODUCTS! <tg-emoji emoji-id=\"5215203655946346044\">🛒</tg-emoji>\n"
+                f"YOU HAVEN'T MADE ANY PURCHASES YET. START SHOPPING TO ACCESS PREMIUM PRODUCTS! <tg-emoji emoji-id=\"6230853345733510932\">🛒</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
             )
             await query.edit_message_text(
@@ -848,7 +850,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             return
 
         history_text = (
-            f"<b>YOUR RECENT PURCHASES</b> <tg-emoji emoji-id=\"4938318633475507037\">📜</tg-emoji>\n"
+            f"<b>YOUR RECENT PURCHASES</b> <tg-emoji emoji-id=\"5940804519083383006\">📜</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
         )
         for idx, order in enumerate(orders[:10], 1):

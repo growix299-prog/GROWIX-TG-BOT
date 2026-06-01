@@ -59,7 +59,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     active_order = None
     if pending_orders:
         for order in pending_orders:
-            if order["delivery_status"] == "AWAITING_EMAIL_GAMES":
+            if order.get("delivery_status", "").startswith("AWAITING_EMAIL_GAMES"):
                 active_order = order
                 break
 
@@ -79,63 +79,59 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Email is valid! Create the OTT activation request
             email = text.lower()
             
-            if active_order["delivery_status"] == "AWAITING_EMAIL_GAMES":
+            # Extract quantity from delivery_status (e.g., AWAITING_EMAIL_GAMES_3)
+            status_parts = active_order["delivery_status"].split("_")
+            qty = int(status_parts[-1]) if status_parts[-1].isdigit() else 1
+
+            if active_order["delivery_status"].startswith("AWAITING_EMAIL_GAMES"):
                 # Fetch credentials immediately
-                await message.reply_text(f"⏳ <i>Fetching your {product['category'].lower()} credentials, please wait...</i>", parse_mode="HTML")
+                await message.reply_text(f"⏳ <i>Fetching {qty} {product['category'].lower()} credentials, please wait...</i>", parse_mode="HTML")
                 
-                credential = get_unused_credential(product["id"])
-                if credential:
-                    mark_credential_used(credential["id"])
+                # Fetch multiple unused credentials
+                credentials_response = supabase.table("credentials").select("*").eq("product_id", product["id"]).eq("status", "UNUSED").limit(qty).execute()
+                credentials = credentials_response.data or []
+                
+                if len(credentials) == qty:
+                    # Mark all as used
+                    for cred in credentials:
+                        mark_credential_used(cred["id"])
+                        
                     update_order_completed(active_order["id"], "DELIVERED")
                     
-                    subscription_text = ""
-                    if product.get('category') == 'OTT' and credential.get('subscription_months'):
-                        try:
-                            # created_at might have 'Z' or offset
-                            created_str = credential['created_at'].replace('Z', '+00:00')
-                            # Handle postgres timestamp
-                            if '.' in created_str:
-                                created_str = created_str.split('+')[0] + '+00:00'
-                            created = datetime.fromisoformat(created_str)
-                            now = datetime.now(timezone.utc)
-                            months = int(credential['subscription_months'])
-                            
-                            total_valid_days = months * 30
-                            days_passed = (now - created).days
-                            days_left = total_valid_days - days_passed
-                            
-                            if days_left > 0:
-                                subscription_text = f"⏳ <b>Time Remaining:</b> {days_left} Days\n\n"
-                            else:
-                                subscription_text = f"⏳ <b>Time Remaining:</b> EXPIRED\n\n"
-                        except Exception as e:
-                            logger.error(f"Date parsing error: {e}")
-                            subscription_text = ""
-                            
                     # Send credentials via Telegram
                     msg = (
                         f"<blockquote>"
                         f"🎉 <b>PAYMENT SUCCESSFUL!</b> 🎉\n\n"
-                        f"✨ Your login ID and password for <b>{product['name']}</b> are ready! 🚀\n\n"
-                        f"🔑 <b>LOGIN DETAILS:</b>\n"
-                        f"👤 <b>Username/Email:</b> <code>{credential['email_or_username']}</code>\n"
-                        f"🔒 <b>Password:</b> <code>{credential['password']}</code>\n\n"
-                        f"{subscription_text}"
+                        f"✨ Your {qty} login credentials for <b>{product['name']}</b> are ready! 🚀\n\n"
+                    )
+                    
+                    for idx, credential in enumerate(credentials, 1):
+                        msg += f"🔑 <b>ACCOUNT {idx}:</b>\n"
+                        msg += f"👤 <b>Username:</b> <code>{credential['email_or_username']}</code>\n"
+                        msg += f"🔒 <b>Password:</b> <code>{credential['password']}</code>\n\n"
+                        
+                    msg += (
                         f"📧 <i>We have also sent your login credentials to your email <b>{email}</b>.</i>\n\n"
-                        f"⚠️ <i>Please change the credentials after logging in to secure your account. Enjoy!</i>\n\n"
+                        f"⚠️ <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
                         f"🙏 <b>Thank you {html.escape(user.first_name)} for shopping with us!</b>\n"
                         f"We'd love to hear your feedback. Please write a review for us!"
                         f"</blockquote>"
                     )
                     
-                    # Send credentials via email
-                    await send_game_credential_email(
-                        to_email=email,
-                        product_name=product["name"],
-                        order_id=active_order["id"],
-                        username=credential['email_or_username'],
-                        password=credential['password']
-                    )
+                    # Send credentials via email (send 1 email with all credentials)
+                    try:
+                        # Assuming send_game_credential_email can handle multiple, or we just format the usernames
+                        usernames = "\n".join([c["email_or_username"] for c in credentials])
+                        passwords = "\n".join([c["password"] for c in credentials])
+                        await send_game_credential_email(
+                            to_email=email,
+                            product_name=f"{product['name']} (x{qty})",
+                            order_id=active_order["id"],
+                            username=usernames,
+                            password=passwords
+                        )
+                    except Exception as e:
+                        logger.error(f"Error sending multi-credential email: {e}")
                     
                     keyboard = [
                         [InlineKeyboardButton("✍️ Write a Review", callback_data="write_review", style="primary")],
@@ -148,18 +144,113 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         reply_markup=InlineKeyboardMarkup(keyboard),
                         parse_mode="HTML"
                     )
-                    logger.info(f"Credential delivered to telegram_id {user.id} and email {email}")
+                    logger.info(f"{qty} Credentials delivered to telegram_id {user.id} and email {email}")
                 else:
-                    # Out of stock
+                    # Out of stock or partial stock
                     update_order_completed(active_order["id"], "MANUAL_PROCESSING")
                     msg = (
                         f"⚠️ <b>Thank you for your email!</b> ⚠️\n\n"
-                        f"Unfortunately, we are currently <b>out of stock</b> of accounts for <b>{product['name']}</b>.\n\n"
-                        f"Our admin team has been notified and will manually send your credentials shortly via this chat and to your email: {email}."
+                        f"Unfortunately, we only have {len(credentials)} out of {qty} accounts available for <b>{product['name']}</b> right now.\n\n"
+                        f"Our admin team has been notified and will manually generate and send the remaining credentials shortly via this chat and to your email: {email}."
                     )
                     await message.reply_text(msg, parse_mode="HTML")
-                    logger.warning(f"No credentials available for product: {product['name']}")
+                    logger.warning(f"Not enough credentials available for product: {product['name']}. Wanted {qty}, found {len(credentials)}.")
                 return
+
+    # Handle clearing conversational states if user clicks a main menu button
+    if any(keyword in text for keyword in ["Products", "Purchase History", "Support", "Wallet"]):
+        context.user_data.pop('awaiting_product_selection', None)
+        context.user_data.pop('awaiting_quantity_for_product', None)
+
+    # 3. Conversational Flow: Handle Quantity Input
+    if context.user_data.get('awaiting_quantity_for_product'):
+        product = context.user_data['awaiting_quantity_for_product']
+        try:
+            qty = int(text)
+            if qty <= 0:
+                raise ValueError
+        except ValueError:
+            await message.reply_text("❌ Please enter a valid positive number (e.g., 1, 2, 3).")
+            return
+            
+        # Check stock
+        stock_resp = supabase.table("credentials").select("id").eq("product_id", product["id"]).eq("status", "UNUSED").execute()
+        stock_count = len(stock_resp.data) if stock_resp.data else 0
+        
+        if qty > stock_count:
+            await message.reply_text(f"❌ <b>Unavailable!</b>\nWe only have <b>{stock_count}</b> accounts in stock for {product['name']}.", parse_mode="HTML")
+            return
+            
+        # Proceed to checkout
+        price = float(product['price'])
+        total_price = price * qty
+        
+        from telegram_bot.handlers.menu import get_product_animated_emoji
+        anim_emoji = get_product_animated_emoji(product['name'])
+        
+        checkout_text = (
+            f"🛒 <b>CHECKOUT SUMMARY</b>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"📦 <b>Product:</b> {anim_emoji} {product['name']}\n"
+            f"🔢 <b>Quantity:</b> {qty}\n"
+            f"💰 <b>Total Price:</b> ₹{total_price:.2f}\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"Please select your preferred payment method below:"
+        )
+        
+        keyboard = [
+            [InlineKeyboardButton("👛 Pay via Wallet", callback_data=f"walletpay_{product['id']}_{qty}")],
+            [InlineKeyboardButton("💳 Pay via Razorpay", callback_data=f"rzpterms_{product['id']}_{qty}")],
+            [InlineKeyboardButton("❌ Cancel", callback_data="main_menu")]
+        ]
+        
+        await message.reply_text(text=checkout_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
+        context.user_data.pop('awaiting_quantity_for_product', None)
+        return
+
+    # 4. Conversational Flow: Handle Product Selection (Fuzzy Match)
+    if context.user_data.get('awaiting_product_selection'):
+        category = context.user_data['awaiting_product_selection']
+        
+        response = supabase.table("products").select("*").eq("category", category).eq("active", True).execute()
+        products = response.data or []
+        
+        if not products:
+            await message.reply_text("❌ No products available in this category.")
+            context.user_data.pop('awaiting_product_selection', None)
+            return
+
+        import difflib
+        product_names = {p['name'].lower(): p for p in products}
+        matches = difflib.get_close_matches(text.lower(), product_names.keys(), n=1, cutoff=0.3)
+        
+        if not matches:
+            await message.reply_text("❌ Product not found. Please check the spelling and try typing again.\n<i>(Example: Netflix)</i>", parse_mode="HTML")
+            return
+            
+        matched_name = matches[0]
+        selected_product = product_names[matched_name]
+        
+        # Check stock
+        stock_resp = supabase.table("credentials").select("id").eq("product_id", selected_product["id"]).eq("status", "UNUSED").execute()
+        stock_count = len(stock_resp.data) if stock_resp.data else 0
+        
+        if stock_count == 0:
+            await message.reply_text(f"❌ Sorry, <b>{selected_product['name']}</b> is currently out of stock. Please try again later.", parse_mode="HTML")
+            context.user_data.pop('awaiting_product_selection', None)
+            return
+            
+        context.user_data['awaiting_quantity_for_product'] = selected_product
+        context.user_data.pop('awaiting_product_selection', None)
+        
+        await message.reply_text(
+            f"✅ <b>{selected_product['name']}</b> is in stock!\n\n"
+            f"📦 <b>Available Accounts:</b> {stock_count}\n\n"
+            f"⌨️ <b>How many accounts do you want to buy?</b>\n"
+            f"<i>(Type a number, e.g., 1 or 2)</i>",
+            parse_mode="HTML"
+        )
+        return
 
     # Handle ReplyKeyboardMarkup selections
     if text == "🛍️ Products":

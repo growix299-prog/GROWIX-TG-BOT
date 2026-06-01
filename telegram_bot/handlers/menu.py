@@ -399,19 +399,28 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             )
             return
 
-        keyboard = []
+        # Store the category in user_data to track state
+        context.user_data['awaiting_product_selection'] = category
+
+        list_text = (
+            f"<b>{category.upper()} CATALOG</b> <tg-emoji emoji-id=\"5215203655946346044\">🛒</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+        )
+
         for prod in products:
-            emoji = get_product_emoji(prod['name'])
-            keyboard.append([
-                InlineKeyboardButton(
-                    f"{emoji} {prod['name']} | ₹{float(prod['price']):.2f}", 
-                    callback_data=f"prod_{prod['id']}"
-                )
-            ])
-        keyboard.append([InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")])
+            emoji = get_product_animated_emoji(prod['name'])
+            list_text += f"{emoji} <b>{prod['name']}</b> - ₹{float(prod['price']):.2f}\n"
+        
+        list_text += (
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
+            f"⌨️ <b>Please TYPE the name of the product you want to buy below:</b>\n"
+            f"<i>(Example: Netflix)</i>"
+        )
+
+        keyboard = [[InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]]
 
         await query.edit_message_text(
-            text=f"<tg-emoji emoji-id=\"5215203655946346044\">🛒</tg-emoji> <b>Available Products:</b>\n\nChoose a product below:",
+            text=list_text,
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode="HTML"
         )
@@ -548,7 +557,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         return
 
     elif data.startswith("walletpay_"):
-        product_id = data.split("_")[1]
+        parts = data.split("_")
+        product_id = parts[1]
+        qty = int(parts[2]) if len(parts) > 2 else 1
+        
         try:
             response = supabase.table("products").select("*").eq("id", product_id).execute()
             product = response.data[0] if response.data else None
@@ -559,7 +571,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_text("❌ Product not found.", parse_mode="HTML")
             return
 
-        price = float(product["price"])
+        price = float(product["price"]) * qty
         wallet_balance = get_wallet_balance(user.id)
 
         if wallet_balance < price:
@@ -570,7 +582,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         success = deduct_wallet_balance(
             telegram_id=user.id,
             amount=price,
-            description=f"Purchase: {product['name']}"
+            description=f"Purchase: {product['name']} (x{qty})"
         )
 
         if not success:
@@ -581,8 +593,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         order_data = create_order(
             telegram_id=user.id,
             product_id=product["id"],
-            payment_id=f"WALLET_{user.id}_{int(__import__('time').time())}",
-            amount=price
+            payment_id=f"WALLET_{user.id}_{int(__import__('time').time())}_{qty}",
+            amount=price,
+            quantity=qty
         )
 
         if not order_data:
@@ -591,44 +604,22 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_text("❌ Order creation failed. Your wallet has been refunded.", parse_mode="HTML")
             return
 
-        # Try to deliver credentials immediately
-        credential = get_unused_credential(product["id"])
-        if credential:
-            mark_credential_used(credential["id"])
-            update_order_completed(order_data["id"], "AWAITING_EMAIL_GAMES")
+        # Request email
+        update_order_completed(order_data["id"], f"AWAITING_EMAIL_GAMES_{qty}")
 
-            msg = (
-                f"🎉 <b>WALLET PAYMENT SUCCESSFUL!</b> 🎉\n\n"
-                f"Thank you for purchasing <b>{product['name']}</b>!\n\n"
-                f"💰 <b>Amount Paid:</b> ₹{price:.2f} (from Wallet)\n"
-                f"👛 <b>Remaining Balance:</b> ₹{get_wallet_balance(user.id):.2f}\n\n"
-                f"━━━━━━━━━━━━━━━━━━━━━\n"
-                f"📧 <b>NEXT STEP — SEND YOUR EMAIL</b>\n"
-                f"━━━━━━━━━━━━━━━━━━━━━\n\n"
-                f"To receive your credentials securely, "
-                f"please <b>type and send your email address</b> in this chat right now.\n\n"
-                f"Your login ID and password will be delivered here instantly and also sent to your email! 🚀"
-            )
-            await query.edit_message_text(text=msg, parse_mode="HTML")
-        else:
-            # Out of stock — AUTO REFUND
-            refund_wallet_balance(
-                telegram_id=user.id,
-                amount=price,
-                reference_id=order_data["id"],
-                description=f"Auto-refund: {product['name']} out of stock"
-            )
-            update_order_completed(order_data["id"], "MANUAL_PROCESSING")
-
-            msg = (
-                f"❌ <b>OUT OF STOCK!</b>\n\n"
-                f"Sorry, <b>{product['name']}</b> is currently out of stock.\n\n"
-                f"💰 <b>₹{price:.2f} has been automatically refunded</b> to your wallet.\n"
-                f"👛 <b>Current Balance:</b> ₹{get_wallet_balance(user.id):.2f}\n\n"
-                f"Please try again later or contact support."
-            )
-            keyboard = [[InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]]
-            await query.edit_message_text(text=msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
+        msg = (
+            f"🎉 <b>WALLET PAYMENT SUCCESSFUL!</b> 🎉\n\n"
+            f"Thank you for purchasing <b>{qty}x {product['name']}</b>!\n\n"
+            f"💰 <b>Amount Paid:</b> ₹{price:.2f} (from Wallet)\n"
+            f"👛 <b>Remaining Balance:</b> ₹{get_wallet_balance(user.id):.2f}\n\n"
+            f"━━━━━━━━━━━━━━━━━━━━━\n"
+            f"📧 <b>NEXT STEP — SEND YOUR EMAIL</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━━━\n\n"
+            f"To receive your {qty} credentials securely, "
+            f"please <b>type and send your email address</b> in this chat right now.\n\n"
+            f"Your login details will be delivered here instantly and also sent to your email! 🚀"
+        )
+        await query.edit_message_text(text=msg, parse_mode="HTML")
         return
 
     elif data == "view_wallet":
@@ -748,7 +739,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         return
 
     elif data.startswith("rzpterms_"):
-        product_id = data.split("_")[1]
+        parts = data.split("_")
+        product_id = parts[1]
+        qty = parts[2] if len(parts) > 2 else "1"
         terms_text = (
             f"⚠️ <b>RAZORPAY TERMS & CONDITIONS</b> ⚠️\n\n"
             f"1. We use Razorpay for secure automated payments (Cards/UPI/Netbanking).\n"
@@ -758,13 +751,16 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             f"Do you agree to these terms?"
         )
         keyboard = [
-            [InlineKeyboardButton("✅ Agree", callback_data=f"rzpagree_{product_id}")],
+            [InlineKeyboardButton("✅ Agree", callback_data=f"rzpagree_{product_id}_{qty}")],
             [InlineKeyboardButton("❌ Decline", callback_data="main_menu")]
         ]
         await query.edit_message_text(text=terms_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
 
     elif data.startswith("rzpagree_"):
-        product_id = data.split("_")[1]
+        parts = data.split("_")
+        product_id = parts[1]
+        qty = int(parts[2]) if len(parts) > 2 else 1
+        
         await query.edit_message_text("<blockquote>⏳ <i>Securing your order & generating payment gateway...</i></blockquote>", parse_mode="HTML")
 
         try:
@@ -777,13 +773,13 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_text("<blockquote>❌ Product not found.</blockquote>", parse_mode="HTML")
             return
 
-        price = float(product["price"])
+        price = float(product["price"]) * qty
         from telegram_bot.services.payment_gateway import create_payment_link
         from telegram_bot.services.order_service import create_order
         
         pay_res = await create_payment_link(
             amount=price,
-            product_name=product["name"],
+            product_name=f"{qty}x {product['name']}",
             telegram_id=user.id,
             product_id=product["id"],
             first_name=user.first_name
@@ -804,7 +800,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             telegram_id=user.id,
             product_id=product["id"],
             payment_id=payment_id,
-            amount=price
+            amount=price,
+            quantity=qty
         )
 
         checkout_text = (

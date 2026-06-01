@@ -47,7 +47,7 @@ def create_user_if_not_exists(telegram_id: int, username: str, first_name: str) 
         logger.error(f"Error creating user {telegram_id}: {str(e)}")
     return {}
 
-def create_order(telegram_id: int, product_id: str, payment_id: str, amount: float) -> Optional[Dict[str, Any]]:
+def create_order(telegram_id: int, product_id: str, payment_id: str, amount: float, quantity: int = 1) -> Optional[Dict[str, Any]]:
     try:
         # Fetch internal user_id first
         user_response = supabase.table("users").select("id").eq("telegram_id", telegram_id).execute()
@@ -60,7 +60,7 @@ def create_order(telegram_id: int, product_id: str, payment_id: str, amount: flo
             "payment_id": payment_id,
             "amount": amount,
             "status": "PENDING",
-            "delivery_status": "PENDING"
+            "delivery_status": f"PENDING_{quantity}"
         }).execute()
 
         if insert_response.data:

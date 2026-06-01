@@ -2,11 +2,20 @@ import os
 import httpx
 import logging
 from typing import Dict, Any, Optional
+import re
 
 logger = logging.getLogger(__name__)
 
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
+
+def clean_customer_name(name: str) -> str:
+    """Remove emojis and special characters from the customer name for Razorpay."""
+    if not name:
+        return "User"
+    # Encode to ASCII, ignoring unsupported characters, then decode back
+    clean = name.encode("ascii", "ignore").decode("ascii").strip()
+    return clean if clean else "Telegram User"
 
 async def create_payment_link(
     amount: float, 
@@ -23,6 +32,7 @@ async def create_payment_link(
         return {"success": False, "error": "Payment system not configured. Contact admin."}
 
     amount_in_paise = int(amount * 100)
+    clean_name = clean_customer_name(first_name)
 
     url = "https://api.razorpay.com/v1/payment_links"
     
@@ -33,7 +43,7 @@ async def create_payment_link(
         "accept_partial": False,
         "description": f"Purchase of {product_name} via Telegram Bot",
         "customer": {
-            "name": first_name,
+            "name": clean_name,
             "contact": "+919876543210" # Default placeholder for TG bot flow
         },
         "notify": {
@@ -86,6 +96,7 @@ async def create_deposit_payment_link(
         return {"success": False, "error": "Payment system not configured. Contact admin."}
 
     amount_in_paise = int(amount * 100)
+    clean_name = clean_customer_name(first_name)
 
     url = "https://api.razorpay.com/v1/payment_links"
 
@@ -95,7 +106,7 @@ async def create_deposit_payment_link(
         "accept_partial": False,
         "description": f"Wallet Deposit of ₹{amount:.2f}",
         "customer": {
-            "name": first_name,
+            "name": clean_name,
             "contact": "+919876543210"
         },
         "notify": {

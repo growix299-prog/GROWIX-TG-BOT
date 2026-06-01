@@ -188,16 +188,40 @@ async def support_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def get_product_emoji(name):
     n = name.lower()
     if 'netflix' in n: return '🔴'
-    if 'prime' in n: return '🔵'
-    if 'canva' in n: return '🖌️'
+    if 'youtube' in n or 'yt' in n: return '▶️'
+    if 'spotify' in n or 'spofy' in n: return '🟢'
+    if 'amazon' in n or 'prime' in n: return '🔵'
+    if 'disney' in n or 'hotstar' in n: return '🟡'
+    if 'steam' in n or 'syeam' in n: return '🎮'
+    if 'zee5' in n: return '🟣'
+    if 'sony' in n or 'liv' in n: return '🟠'
+    if 'chatgpt' in n: return '🤖'
+    if 'capcut' in n or 'captcut' in n: return '✂️'
+    if 'google' in n: return '☁️'
+    if 'canva' in n or 'anva' in n: return '🖌️'
     if 'crunchyroll' in n: return '🟠'
-    if 'spotify' in n: return '🟢'
-    if 'duolingo' in n: return '🟢'
-    if 'gta' in n: return '🚗'
-    if 'valorant' in n: return '🎯'
-    if 'nord' in n or 'vpn' in n: return '🛡️'
-    if 'tradingview' in n: return '📈'
+    if 'claude' in n: return '🧠'
+    if 'adobe' in n or 'creative' in n: return '🎨'
     return '🔹'
+
+def get_product_animated_emoji(name):
+    n = name.lower()
+    if 'netflix' in n: return '<tg-emoji emoji-id="5318911503938634641">🔴</tg-emoji>'
+    if 'youtube' in n or 'yt' in n: return '<tg-emoji emoji-id="5334681713316479679">▶️</tg-emoji>'
+    if 'spotify' in n or 'spofy' in n: return '<tg-emoji emoji-id="5346074681004801565">🟢</tg-emoji>'
+    if 'amazon' in n or 'prime' in n: return '<tg-emoji emoji-id="5346056560537779652">🔵</tg-emoji>'
+    if 'disney' in n or 'hotstar' in n: return '<tg-emoji emoji-id="5332394707655869572">🟡</tg-emoji>'
+    if 'steam' in n or 'syeam' in n: return '<tg-emoji emoji-id="5373144051690258848">🎮</tg-emoji>'
+    if 'zee5' in n: return '<tg-emoji emoji-id="6327648409503142865">🟣</tg-emoji>'
+    if 'sony' in n or 'liv' in n: return '<tg-emoji emoji-id="6327725937957801811">🟠</tg-emoji>'
+    if 'chatgpt' in n: return '<tg-emoji emoji-id="5359726582447487916">🤖</tg-emoji>'
+    if 'capcut' in n or 'captcut' in n: return '<tg-emoji emoji-id="5364339557712020484">✂️</tg-emoji>'
+    if 'google' in n: return '<tg-emoji emoji-id="5875095634033250205">☁️</tg-emoji>'
+    if 'canva' in n or 'anva' in n: return '<tg-emoji emoji-id="5879982576671657703">🖌️</tg-emoji>'
+    if 'crunchyroll' in n: return '<tg-emoji emoji-id="6231196182907983273">🟠</tg-emoji>'
+    if 'claude' in n: return '<tg-emoji emoji-id="5899837428797020489">🧠</tg-emoji>'
+    if 'adobe' in n or 'creative' in n: return '<tg-emoji emoji-id="5879753496000991296">🎨</tg-emoji>'
+    return '<tg-emoji emoji-id="5352625743081775722">🔹</tg-emoji>'
 
 async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Processes all inline button clicks."""
@@ -421,31 +445,31 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             stock_count = 0
 
         is_in_stock = stock_count > 0
-        stock_label = f"✅ In Stock ({stock_count} available)" if is_in_stock else "❌ OUT OF STOCK"
+
+        if not is_in_stock:
+            await query.answer("❌ OUT OF STOCK", show_alert=True)
+            return
+
+        stock_label = f"✅ In Stock ({stock_count} available)"
+
+        anim_emoji = get_product_animated_emoji(product['name'])
 
         details = (
             f"<blockquote>"
             f"📦 <b>PRODUCT DETAIL</b> 📦\n\n"
-            f"🏷️ <b>Name:</b> {product['name']}\n"
+            f"🏷️ <b>Name:</b> {anim_emoji} {product['name']}\n"
             f"🗂️ <b>Category:</b> {product['category']}\n"
             f"💰 <b>Price:</b> ₹{float(product['price']):.2f}\n"
             f"⚡ <b>Delivery:</b> ✨ INSTANT AUTO-DELIVERY ✨\n"
             f"📊 <b>Stock Status:</b> {stock_label}\n\n"
         )
 
-        if is_in_stock:
-            details += f"🛒 <i>Ready to purchase? Click 'Buy Now' to generate a secure automated checkout link.</i>"
-            details += "</blockquote>"
-            keyboard = [
-                [InlineKeyboardButton("💳 Buy Now", callback_data=f"buy_{product['id']}")],
-                [InlineKeyboardButton(f"🔙 Back to {product['category']}", callback_data=f"cat_{product['category']}")]
-            ]
-        else:
-            details += f"⚠️ <i>This product is currently out of stock. Please contact support for restocking information.</i>"
-            details += "</blockquote>"
-            keyboard = [
-                [InlineKeyboardButton(f"🔙 Back to {product['category']}", callback_data=f"cat_{product['category']}")]
-            ]
+        details += f"🛒 <i>Ready to purchase? Click 'Buy Now' to generate a secure automated checkout link.</i>"
+        details += "</blockquote>"
+        keyboard = [
+            [InlineKeyboardButton("💳 Buy Now", callback_data=f"buy_{product['id']}")],
+            [InlineKeyboardButton(f"🔙 Back to {product['category']}", callback_data=f"cat_{product['category']}")]
+        ]
 
         await query.edit_message_text(
             text=details,
@@ -492,12 +516,12 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             return
 
         price = float(product["price"])
-        emoji = get_product_emoji(product['name'])
+        anim_emoji = get_product_animated_emoji(product['name'])
         wallet_balance = get_wallet_balance(user.id)
         
         checkout_text = (
             f"⚠️ <b>PURCHASE CONFIRMATION</b> ⚠️\n\n"
-            f"📦 <b>Product:</b> {emoji} {product['name']}\n"
+            f"📦 <b>Product:</b> {anim_emoji} {product['name']}\n"
             f"🔢 <b>Quantity:</b> 1\n"
             f"💵 <b>Base Total:</b> ₹{price:.2f}\n\n"
             f"💲 <b>FINAL DUE:</b> ₹{price:.2f}\n\n"

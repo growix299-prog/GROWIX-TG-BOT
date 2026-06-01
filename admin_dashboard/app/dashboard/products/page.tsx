@@ -338,13 +338,13 @@ export default function ProductsPage() {
                       {catProducts.map((prod) => (
                         <div 
                           key={prod.id} 
-                          className={`glass-panel p-6 rounded-xl relative transition-all overflow-hidden flex flex-col justify-between h-48 border ${
+                          className={`glass-panel p-5 rounded-xl relative transition-all overflow-hidden flex flex-col justify-between h-[13rem] border ${
                             prod.active ? 'border-cyber-border/80 hover:border-yellow-500/50 hover:shadow-glow-yellow/5' : 'border-red-950/40 opacity-60'
                           }`}
                         >
                           <div>
-                            <div className="flex items-center justify-between mb-3">
-                              <span className={`px-2 py-0.5 rounded text-[9px] font-black font-sfpro uppercase ${
+                            <div className="flex items-start justify-between mb-3">
+                              <span className={`px-2 py-0.5 mt-0.5 rounded text-[9px] font-black font-sfpro uppercase ${
                                 prod.category === 'OTT' 
                                   ? 'bg-purple-950/80 text-purple-400 border border-purple-500/20' 
                                   : prod.category === 'AI'
@@ -355,7 +355,7 @@ export default function ProductsPage() {
                               }`}>
                                 {prod.category === 'VideoEditing' ? 'VIDEO EDITING' : prod.category}
                               </span>
-                              <span className="text-sm font-black font-sfpro text-emerald-400 flex flex-col items-end">
+                              <span className="text-[11px] font-black font-sfpro flex flex-col items-end gap-1">
                                 {prod.category === 'OTT' ? (
                                   <>
                                     <span className="text-cyan-400">1M: ₹{prod.price_1m || 0}</span>
@@ -363,7 +363,7 @@ export default function ProductsPage() {
                                     <span className="text-rose-400">6M: ₹{prod.price_6m || 0}</span>
                                   </>
                                 ) : (
-                                  <span>₹{parseFloat(prod.price || 0).toFixed(2)}</span>
+                                  <span className="text-lg text-emerald-400">₹{parseFloat(prod.price || 0).toFixed(2)}</span>
                                 )}
                               </span>
                             </div>

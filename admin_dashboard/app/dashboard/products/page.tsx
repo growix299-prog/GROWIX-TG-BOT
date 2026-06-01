@@ -67,6 +67,7 @@ export default function ProductsPage() {
     { name: 'Crunchyroll', category: 'OTT', price: 0, delivery_type: 'AUTO', active: true },
     { name: 'Claude AI Pro', category: 'AI', price: 0, delivery_type: 'AUTO', active: true },
     { name: 'Adobe Creative Cloud', category: 'VideoEditing', price: 0, delivery_type: 'AUTO', active: true },
+    { name: 'Picsart', category: 'VideoEditing', price: 0, delivery_type: 'AUTO', active: true },
   ]
 
   const injectDefaults = async () => {

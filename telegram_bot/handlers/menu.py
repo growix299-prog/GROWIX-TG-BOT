@@ -308,6 +308,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             )
             
     elif data == "main_menu":
+        # Clear any pending conversational states
+        context.user_data.pop('awaiting_product_selection', None)
+        context.user_data.pop('awaiting_quantity_for_product', None)
+        
         is_member = await check_channel_membership(user.id, context)
         if not is_member:
             banner = (

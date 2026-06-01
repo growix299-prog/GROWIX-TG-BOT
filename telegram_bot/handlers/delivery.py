@@ -243,11 +243,14 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['awaiting_quantity_for_product'] = selected_product
         context.user_data.pop('awaiting_product_selection', None)
         
+        keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="main_menu")]]
+        
         await message.reply_text(
             f"✅ <b>{selected_product['name']}</b> is in stock!\n\n"
             f"📦 <b>Available Accounts:</b> {stock_count}\n\n"
             f"⌨️ <b>How many accounts do you want to buy?</b>\n"
             f"<i>(Type a number, e.g., 1 or 2)</i>",
+            reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode="HTML"
         )
         return

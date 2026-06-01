@@ -221,6 +221,8 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # 3. Conversational Flow: Handle Quantity Input
     if context.user_data.get('awaiting_quantity_for_product'):
         product = context.user_data['awaiting_quantity_for_product']
+        months = context.user_data.get('awaiting_quantity_duration', 0)
+        
         try:
             qty = int(text)
             if qty <= 0:
@@ -230,7 +232,10 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
             
         # Check stock
-        stock_resp = supabase.table("credentials").select("id").eq("product_id", product["id"]).eq("status", "UNUSED").execute()
+        q = supabase.table("credentials").select("id").eq("product_id", product["id"]).eq("status", "UNUSED")
+        if product["category"] == "OTT" and months > 0:
+            q = q.eq("subscription_months", months)
+        stock_resp = q.execute()
         stock_count = len(stock_resp.data) if stock_resp.data else 0
         
         if qty > stock_count:
@@ -238,7 +243,13 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
             
         # Proceed to checkout
-        price = float(product['price'])
+        if product["category"] == "OTT" and months > 0:
+            price = float(product.get(f"price_{months}m") or 0)
+            product_name_display = f"{product['name']} ({months} Months)"
+        else:
+            price = float(product['price'])
+            product_name_display = product['name']
+            
         total_price = price * qty
         
         from telegram_bot.handlers.menu import get_product_animated_emoji
@@ -247,7 +258,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         checkout_text = (
             f"🛒 <b>CHECKOUT SUMMARY</b>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"📦 <b>Product:</b> {anim_emoji} {product['name']}\n"
+            f"📦 <b>Product:</b> {anim_emoji} {product_name_display}\n"
             f"🔢 <b>Quantity:</b> {qty}\n"
             f"💰 <b>Total Price:</b> ₹{total_price:.2f}\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
@@ -255,13 +266,14 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         
         keyboard = [
-            [InlineKeyboardButton("👛 Pay via Wallet", callback_data=f"walletpay_{product['id']}_{qty}")],
-            [InlineKeyboardButton("💳 Pay via Razorpay", callback_data=f"rzpterms_{product['id']}_{qty}")],
+            [InlineKeyboardButton("👛 Pay via Wallet", callback_data=f"walletpay_{product['id']}_{months}_{qty}")],
+            [InlineKeyboardButton("💳 Pay via Razorpay", callback_data=f"rzpterms_{product['id']}_{months}_{qty}")],
             [InlineKeyboardButton("❌ Cancel", callback_data="main_menu")]
         ]
         
         await message.reply_text(text=checkout_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
         context.user_data.pop('awaiting_quantity_for_product', None)
+        context.user_data.pop('awaiting_quantity_duration', None)
         return
 
     # 4. Conversational Flow: Handle Product Selection (Fuzzy Match)
@@ -303,7 +315,54 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         matched_name = matches[0]
         selected_product = product_names[matched_name]
         
-        # Check stock
+        if selected_product['category'] == 'OTT':
+            from telegram_bot.handlers.menu import get_product_animated_emoji
+            anim_emoji = get_product_animated_emoji(selected_product['name'])
+            
+            stock_by_duration = {1: 0, 3: 0, 6: 0}
+            stock_resp = supabase.table("credentials").select("id, subscription_months").eq("product_id", selected_product["id"]).eq("status", "UNUSED").execute()
+            if stock_resp.data:
+                for cred in stock_resp.data:
+                    m = cred.get("subscription_months")
+                    if m in stock_by_duration:
+                        stock_by_duration[m] += 1
+            
+            keyboard = []
+            if stock_by_duration[1] > 0:
+                keyboard.append([InlineKeyboardButton(f"💳 Buy 1 Month (₹{float(selected_product.get('price_1m') or 0):.2f})", callback_data=f"buy_{selected_product['id']}_1")])
+            else:
+                keyboard.append([InlineKeyboardButton(f"❌ 1 Month (Out of Stock)", callback_data="ignore")])
+                
+            if stock_by_duration[3] > 0:
+                keyboard.append([InlineKeyboardButton(f"💳 Buy 3 Months (₹{float(selected_product.get('price_3m') or 0):.2f})", callback_data=f"buy_{selected_product['id']}_3")])
+            else:
+                keyboard.append([InlineKeyboardButton(f"❌ 3 Months (Out of Stock)", callback_data="ignore")])
+                
+            if stock_by_duration[6] > 0:
+                keyboard.append([InlineKeyboardButton(f"💳 Buy 6 Months (₹{float(selected_product.get('price_6m') or 0):.2f})", callback_data=f"buy_{selected_product['id']}_6")])
+            else:
+                keyboard.append([InlineKeyboardButton(f"❌ 6 Months (Out of Stock)", callback_data="ignore")])
+                
+            keyboard.append([InlineKeyboardButton("❌ Cancel", callback_data="main_menu")])
+            
+            details = (
+                f"<blockquote>"
+                f"📦 <b>PRODUCT DETAIL</b> 📦\n\n"
+                f"🏷️ <b>Name:</b> {anim_emoji} {selected_product['name']}\n"
+                f"🗂️ <b>Category:</b> {selected_product['category']}\n"
+                f"💰 <b>1 Month:</b> ₹{float(selected_product.get('price_1m') or 0):.2f}\n"
+                f"💰 <b>3 Months:</b> ₹{float(selected_product.get('price_3m') or 0):.2f}\n"
+                f"💰 <b>6 Months:</b> ₹{float(selected_product.get('price_6m') or 0):.2f}\n"
+                f"⚡ <b>Delivery:</b> ✨ INSTANT AUTO-DELIVERY ✨\n\n"
+                f"🛒 <i>Please select your desired duration below:</i>\n"
+                f"</blockquote>"
+            )
+            
+            await message.reply_text(details, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
+            context.user_data.pop('awaiting_product_selection', None)
+            return
+
+        # Check stock for non-OTT
         stock_resp = supabase.table("credentials").select("id").eq("product_id", selected_product["id"]).eq("status", "UNUSED").execute()
         stock_count = len(stock_resp.data) if stock_resp.data else 0
         
@@ -313,6 +372,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
             
         context.user_data['awaiting_quantity_for_product'] = selected_product
+        context.user_data['awaiting_quantity_duration'] = 0
         context.user_data.pop('awaiting_product_selection', None)
         
         keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="main_menu")]]

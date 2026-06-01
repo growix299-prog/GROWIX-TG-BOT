@@ -605,36 +605,18 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             )
             return
 
-        if product["category"] == "OTT" and months > 0:
-            price = float(product.get(f"price_{months}m") or 0)
-            product_name_display = f"{product['name']} ({months} Months)"
-        else:
-            price = float(product["price"])
-            product_name_display = product['name']
-
-        anim_emoji = get_product_animated_emoji(product['name'])
-        wallet_balance = get_wallet_balance(user.id)
+        context.user_data['awaiting_quantity_for_product'] = product
+        context.user_data['awaiting_quantity_duration'] = months
         
-        checkout_text = (
-            f"⚠️ <b>PURCHASE CONFIRMATION</b> ⚠️\n\n"
-            f"📦 <b>Product:</b> {anim_emoji} {product_name_display}\n"
-            f"🔢 <b>Quantity:</b> 1\n"
-            f"💵 <b>Base Total:</b> ₹{price:.2f}\n\n"
-            f"💲 <b>FINAL DUE:</b> ₹{price:.2f}\n\n"
-            f"👛 <b>Wallet Balance:</b> ₹{wallet_balance:.2f}\n\n"
-            f"Select payment method:"
-        )
-
-        keyboard = []
-        if wallet_balance >= price:
-            keyboard.append([InlineKeyboardButton(f"👛 Pay with Wallet (₹{wallet_balance:.2f})", callback_data=f"walletpay_{product['id']}_{months}_1")] )
-        else:
-            keyboard.append([InlineKeyboardButton(f"👛 Wallet (₹{wallet_balance:.2f}) — Insufficient", callback_data="alert_wallet")])
-        keyboard.append([InlineKeyboardButton("💳 Pay with Razorpay (Auto)", callback_data=f"rzpterms_{product['id']}_{months}_1")])
-        keyboard.append([InlineKeyboardButton("❌ Cancel", callback_data="main_menu")])
-
+        keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="main_menu")]]
+        
+        duration_text = f" ({months} Months)" if product["category"] == "OTT" and months > 0 else ""
+        
         await query.edit_message_text(
-            text=checkout_text,
+            f"✅ <b>{product['name']}{duration_text}</b> is in stock!\n\n"
+            f"📦 <b>Available Accounts:</b> {len(stock_check.data) if stock_check.data else 0}\n\n"
+            f"⌨️ <b>How many accounts do you want to buy?</b>\n"
+            f"<i>(Type a number, e.g., 1 or 2)</i>",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode="HTML"
         )

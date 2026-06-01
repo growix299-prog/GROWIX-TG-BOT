@@ -18,6 +18,9 @@ export default function ProductsPage() {
   const [name, setName] = useState('')
   const [category, setCategory] = useState('Games')
   const [price, setPrice] = useState('')
+  const [price1m, setPrice1m] = useState('')
+  const [price3m, setPrice3m] = useState('')
+  const [price6m, setPrice6m] = useState('')
   const [deliveryType, setDeliveryType] = useState('AUTO')
   const [active, setActive] = useState(true)
   
@@ -87,6 +90,9 @@ export default function ProductsPage() {
     setName('')
     setCategory('Games')
     setPrice('')
+    setPrice1m('')
+    setPrice3m('')
+    setPrice6m('')
     setDeliveryType('AUTO')
     setActive(true)
     setFormError(null)
@@ -97,7 +103,10 @@ export default function ProductsPage() {
     setEditingProduct(product)
     setName(product.name)
     setCategory(product.category)
-    setPrice(String(product.price))
+    setPrice(String(product.price || ''))
+    setPrice1m(String(product.price_1m || ''))
+    setPrice3m(String(product.price_3m || ''))
+    setPrice6m(String(product.price_6m || ''))
     setDeliveryType(product.delivery_type)
     setActive(product.active)
     setFormError(null)
@@ -112,16 +121,21 @@ export default function ProductsPage() {
       setFormError("Product name is required.")
       return
     }
-    const numPrice = Number(price)
-    if (isNaN(numPrice) || numPrice < 0) {
-      setFormError("Please enter a valid positive price.")
-      return
+    if (category !== 'OTT') {
+      const numPrice = Number(price)
+      if (isNaN(numPrice) || numPrice < 0) {
+        setFormError("Please enter a valid positive base price.")
+        return
+      }
     }
 
     const payload = {
       name,
       category,
-      price: numPrice,
+      price: category === 'OTT' ? 0 : Number(price),
+      price_1m: category === 'OTT' ? Number(price1m) : 0,
+      price_3m: category === 'OTT' ? Number(price3m) : 0,
+      price_6m: category === 'OTT' ? Number(price6m) : 0,
       delivery_type: deliveryType,
       active
     }
@@ -341,8 +355,16 @@ export default function ProductsPage() {
                               }`}>
                                 {prod.category === 'VideoEditing' ? 'VIDEO EDITING' : prod.category}
                               </span>
-                              <span className="text-lg font-black font-sfpro text-emerald-400">
-                                ₹{parseFloat(prod.price).toFixed(2)}
+                              <span className="text-sm font-black font-sfpro text-emerald-400 flex flex-col items-end">
+                                {prod.category === 'OTT' ? (
+                                  <>
+                                    <span className="text-cyan-400">1M: ₹{prod.price_1m || 0}</span>
+                                    <span className="text-yellow-400">3M: ₹{prod.price_3m || 0}</span>
+                                    <span className="text-rose-400">6M: ₹{prod.price_6m || 0}</span>
+                                  </>
+                                ) : (
+                                  <span>₹{parseFloat(prod.price || 0).toFixed(2)}</span>
+                                )}
                               </span>
                             </div>
                             <h3 className="text-base font-bold text-white tracking-wide truncate mb-1">{prod.name}</h3>
@@ -420,7 +442,7 @@ export default function ProductsPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                <div className={category === 'OTT' ? "col-span-2" : ""}>
                   <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Category</label>
                   <select
                     value={category}
@@ -433,19 +455,63 @@ export default function ProductsPage() {
                     <option value="VideoEditing">Video Editing</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Price (INR)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="199.00"
-                    className="w-full px-4 py-2.5 bg-cyber-bg border border-cyber-border rounded-lg text-cyber-text placeholder-gray-600 focus:outline-none focus:border-yellow-400"
-                  />
-                </div>
+                
+                {category !== 'OTT' && (
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Base Price (INR)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      placeholder="199.00"
+                      className="w-full px-4 py-2.5 bg-cyber-bg border border-cyber-border rounded-lg text-cyber-text placeholder-gray-600 focus:outline-none focus:border-yellow-400"
+                    />
+                  </div>
+                )}
               </div>
+
+              {category === 'OTT' && (
+                <div className="grid grid-cols-3 gap-2 p-3 bg-cyber-bg border border-cyber-border rounded-lg">
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-cyan-400 font-bold mb-1">1 Month (₹)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      value={price1m}
+                      onChange={(e) => setPrice1m(e.target.value)}
+                      placeholder="100.00"
+                      className="w-full px-2 py-1.5 bg-black border border-cyber-border rounded-lg text-cyber-text placeholder-gray-600 focus:outline-none focus:border-cyan-400 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-yellow-400 font-bold mb-1">3 Months (₹)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      value={price3m}
+                      onChange={(e) => setPrice3m(e.target.value)}
+                      placeholder="250.00"
+                      className="w-full px-2 py-1.5 bg-black border border-cyber-border rounded-lg text-cyber-text placeholder-gray-600 focus:outline-none focus:border-yellow-400 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-rose-400 font-bold mb-1">6 Months (₹)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      value={price6m}
+                      onChange={(e) => setPrice6m(e.target.value)}
+                      placeholder="400.00"
+                      className="w-full px-2 py-1.5 bg-black border border-cyber-border rounded-lg text-cyber-text placeholder-gray-600 focus:outline-none focus:border-rose-400 text-xs"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Delivery Protocol</label>

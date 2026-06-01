@@ -133,16 +133,18 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Email is valid! Create the OTT activation request
             email = text.lower()
             
-            # Extract quantity from delivery_status (e.g., AWAITING_EMAIL_GAMES_3)
-            status_parts = active_order["delivery_status"].split("_")
-            qty = int(status_parts[-1]) if status_parts[-1].isdigit() else 1
+            qty = active_order.get("quantity", 1)
 
             if active_order["delivery_status"].startswith("AWAITING_EMAIL_GAMES"):
                 # Fetch credentials immediately
                 await message.reply_text(f"⏳ <i>Fetching {qty} {product['category'].lower()} credentials, please wait...</i>", parse_mode="HTML")
                 
                 # Fetch multiple unused credentials
-                credentials_response = supabase.table("credentials").select("*").eq("product_id", product["id"]).eq("status", "UNUSED").limit(qty).execute()
+                q = supabase.table("credentials").select("*").eq("product_id", product["id"]).eq("status", "UNUSED")
+                if product["category"] == "OTT" and active_order.get("subscription_months", 0) > 0:
+                    q = q.eq("subscription_months", active_order.get("subscription_months"))
+                credentials_response = q.limit(qty).execute()
+                
                 credentials = credentials_response.data or []
                 
                 if len(credentials) == qty:

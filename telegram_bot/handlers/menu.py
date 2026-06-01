@@ -503,17 +503,34 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             f"📦 <b>PRODUCT DETAIL</b> 📦\n\n"
             f"🏷️ <b>Name:</b> {anim_emoji} {product['name']}\n"
             f"🗂️ <b>Category:</b> {product['category']}\n"
-            f"💰 <b>Price:</b> ₹{float(product['price']):.2f}\n"
+        )
+        if product['category'] == 'OTT':
+            details += (
+                f"💰 <b>1 Month:</b> ₹{float(product.get('price_1m') or 0):.2f}\n"
+                f"💰 <b>3 Months:</b> ₹{float(product.get('price_3m') or 0):.2f}\n"
+                f"💰 <b>6 Months:</b> ₹{float(product.get('price_6m') or 0):.2f}\n"
+            )
+        else:
+            details += f"💰 <b>Price:</b> ₹{float(product['price']):.2f}\n"
+        
+        details += (
             f"⚡ <b>Delivery:</b> ✨ INSTANT AUTO-DELIVERY ✨\n"
             f"📊 <b>Stock Status:</b> {stock_label}\n\n"
         )
 
         details += f"🛒 <i>Ready to purchase? Click 'Buy Now' to generate a secure automated checkout link.</i>"
         details += "</blockquote>"
-        keyboard = [
-            [InlineKeyboardButton("💳 Buy Now", callback_data=f"buy_{product['id']}")],
-            [InlineKeyboardButton(f"🔙 Back to {product['category']}", callback_data=f"cat_{product['category']}")]
-        ]
+        details += "</blockquote>"
+        
+        keyboard = []
+        if product['category'] == 'OTT':
+            keyboard.append([InlineKeyboardButton(f"💳 Buy 1 Month (₹{float(product.get('price_1m') or 0):.2f})", callback_data=f"buy_{product['id']}_1")])
+            keyboard.append([InlineKeyboardButton(f"💳 Buy 3 Months (₹{float(product.get('price_3m') or 0):.2f})", callback_data=f"buy_{product['id']}_3")])
+            keyboard.append([InlineKeyboardButton(f"💳 Buy 6 Months (₹{float(product.get('price_6m') or 0):.2f})", callback_data=f"buy_{product['id']}_6")])
+        else:
+            keyboard.append([InlineKeyboardButton("💳 Buy Now", callback_data=f"buy_{product['id']}_0")])
+            
+        keyboard.append([InlineKeyboardButton(f"🔙 Back to {product['category']}", callback_data=f"cat_{product['category']}")])
 
         await query.edit_message_text(
             text=details,
@@ -522,7 +539,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         )
 
     elif data.startswith("buy_"):
-        product_id = data.split("_")[1]
+        parts = data.split("_")
+        product_id = parts[1]
+        months = int(parts[2]) if len(parts) > 2 else 0
         
         try:
             response = supabase.table("products").select("*").eq("id", product_id).execute()
@@ -537,17 +556,21 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         has_stock = False
         try:
-            stock_check = supabase.table("credentials").select("id").eq("product_id", product_id).eq("status", "UNUSED").limit(1).execute()
+            q = supabase.table("credentials").select("id").eq("product_id", product_id).eq("status", "UNUSED")
+            if product["category"] == "OTT" and months > 0:
+                q = q.eq("subscription_months", months)
+            stock_check = q.limit(1).execute()
             has_stock = bool(stock_check.data)
         except Exception as e:
             has_stock = False
 
         if not has_stock:
+            duration_text = f" ({months} Months)" if product["category"] == "OTT" and months > 0 else ""
             await query.edit_message_text(
                 text=(
                     f"<blockquote>"
                     f"❌ <b>OUT OF STOCK!</b>\n\n"
-                    f"Sorry, <b>{product['name']}</b> is currently out of stock. "
+                    f"Sorry, <b>{product['name']}{duration_text}</b> is currently out of stock. "
                     f"No credentials are available for delivery right now.\n\n"
                     f"Please check back later or contact support for restocking updates."
                     f"</blockquote>"
@@ -559,13 +582,19 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             )
             return
 
-        price = float(product["price"])
+        if product["category"] == "OTT" and months > 0:
+            price = float(product.get(f"price_{months}m") or 0)
+            product_name_display = f"{product['name']} ({months} Months)"
+        else:
+            price = float(product["price"])
+            product_name_display = product['name']
+
         anim_emoji = get_product_animated_emoji(product['name'])
         wallet_balance = get_wallet_balance(user.id)
         
         checkout_text = (
             f"⚠️ <b>PURCHASE CONFIRMATION</b> ⚠️\n\n"
-            f"📦 <b>Product:</b> {anim_emoji} {product['name']}\n"
+            f"📦 <b>Product:</b> {anim_emoji} {product_name_display}\n"
             f"🔢 <b>Quantity:</b> 1\n"
             f"💵 <b>Base Total:</b> ₹{price:.2f}\n\n"
             f"💲 <b>FINAL DUE:</b> ₹{price:.2f}\n\n"
@@ -575,10 +604,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         keyboard = []
         if wallet_balance >= price:
-            keyboard.append([InlineKeyboardButton(f"👛 Pay with Wallet (₹{wallet_balance:.2f})", callback_data=f"walletpay_{product['id']}")] )
+            keyboard.append([InlineKeyboardButton(f"👛 Pay with Wallet (₹{wallet_balance:.2f})", callback_data=f"walletpay_{product['id']}_{months}_1")] )
         else:
             keyboard.append([InlineKeyboardButton(f"👛 Wallet (₹{wallet_balance:.2f}) — Insufficient", callback_data="alert_wallet")])
-        keyboard.append([InlineKeyboardButton("💳 Pay with Razorpay (Auto)", callback_data=f"rzpterms_{product['id']}")])
+        keyboard.append([InlineKeyboardButton("💳 Pay with Razorpay (Auto)", callback_data=f"rzpterms_{product['id']}_{months}_1")])
         keyboard.append([InlineKeyboardButton("❌ Cancel", callback_data="main_menu")])
 
         await query.edit_message_text(
@@ -630,7 +659,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             product_id=product["id"],
             payment_id=f"WALLET_{user.id}_{int(__import__('time').time())}_{qty}",
             amount=price,
-            quantity=qty
+            quantity=qty,
+            subscription_months=months
         )
 
         if not order_data:
@@ -640,7 +670,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             return
 
         # Request email
-        update_order_completed(order_data["id"], f"AWAITING_EMAIL_GAMES_{qty}")
+        update_order_completed(order_data["id"], "AWAITING_EMAIL_GAMES")
 
         msg = (
             f"🎉 <b>WALLET PAYMENT SUCCESSFUL!</b> 🎉\n\n"
@@ -865,7 +895,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             product_id=product["id"],
             payment_id=payment_id,
             amount=price,
-            quantity=qty
+            quantity=qty,
+            subscription_months=months
         )
 
         checkout_text = (

@@ -47,7 +47,7 @@ def create_user_if_not_exists(telegram_id: int, username: str, first_name: str) 
         logger.error(f"Error creating user {telegram_id}: {str(e)}")
     return {}
 
-def create_order(telegram_id: int, product_id: str, payment_id: str, amount: float, quantity: int = 1) -> Optional[Dict[str, Any]]:
+def create_order(telegram_id: int, product_id: str, payment_id: str, amount: float, quantity: int = 1, subscription_months: int = 0) -> Optional[Dict[str, Any]]:
     try:
         # Fetch internal user_id first
         user_response = supabase.table("users").select("id").eq("telegram_id", telegram_id).execute()
@@ -60,7 +60,9 @@ def create_order(telegram_id: int, product_id: str, payment_id: str, amount: flo
             "payment_id": payment_id,
             "amount": amount,
             "status": "PENDING",
-            "delivery_status": f"PENDING_{quantity}"
+            "quantity": quantity,
+            "subscription_months": subscription_months,
+            "delivery_status": "PENDING"
         }).execute()
 
         if insert_response.data:
@@ -99,10 +101,14 @@ def update_order_completed(order_id: str, delivery_status: str) -> bool:
         logger.error(f"Error updating order status for {order_id}: {str(e)}")
         return False
 
-def get_unused_credential(product_id: str) -> Optional[Dict[str, Any]]:
+def get_unused_credential(product_id: str, duration: int = 0) -> Optional[Dict[str, Any]]:
     try:
         # Fetch one unused credential for the product
-        response = supabase.table("credentials").select("*").eq("product_id", product_id).eq("status", "UNUSED").limit(1).execute()
+        query = supabase.table("credentials").select("*").eq("product_id", product_id).eq("status", "UNUSED")
+        if duration > 0:
+            query = query.eq("subscription_months", duration)
+            
+        response = query.limit(1).execute()
         if response.data:
             return response.data[0]
     except Exception as e:

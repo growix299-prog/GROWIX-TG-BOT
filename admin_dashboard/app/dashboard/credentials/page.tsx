@@ -369,14 +369,19 @@ export default function CredentialsPage() {
                 {products.find(p => p.id === productId)?.category === 'OTT' && (
                   <div>
                     <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Subscription Duration (Months)</label>
+                    <div className="flex gap-2 mb-2">
+                        <button type="button" onClick={() => setSubscriptionMonths('1')} className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider border rounded transition-all ${subscriptionMonths === '1' ? 'border-cyan-500 text-cyan-400 bg-cyan-950/40 shadow-[0_0_10px_rgba(34,211,238,0.2)]' : 'border-cyber-border text-gray-500 hover:border-gray-500 hover:text-gray-300'}`}>1 Month</button>
+                        <button type="button" onClick={() => setSubscriptionMonths('3')} className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider border rounded transition-all ${subscriptionMonths === '3' ? 'border-yellow-500 text-yellow-400 bg-yellow-950/40 shadow-[0_0_10px_rgba(234,179,8,0.2)]' : 'border-cyber-border text-gray-500 hover:border-gray-500 hover:text-gray-300'}`}>3 Months</button>
+                        <button type="button" onClick={() => setSubscriptionMonths('6')} className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider border rounded transition-all ${subscriptionMonths === '6' ? 'border-rose-500 text-rose-400 bg-rose-950/40 shadow-[0_0_10px_rgba(244,63,94,0.2)]' : 'border-cyber-border text-gray-500 hover:border-gray-500 hover:text-gray-300'}`}>6 Months</button>
+                    </div>
                     <input
                       type="number"
                       min="1"
                       required
                       value={subscriptionMonths}
                       onChange={(e) => setSubscriptionMonths(e.target.value)}
-                      placeholder="e.g. 1, 3, 6"
-                      className="w-full px-4 py-2.5 bg-cyber-bg border border-cyber-border rounded-lg text-cyber-text placeholder-gray-600 focus:outline-none focus:border-yellow-400"
+                      placeholder="Or type custom months (e.g. 12)"
+                      className="w-full px-4 py-2.5 bg-black border border-cyber-border rounded-lg text-cyber-text placeholder-gray-600 focus:outline-none focus:border-yellow-400"
                     />
                   </div>
                 )}
@@ -574,13 +579,19 @@ export default function CredentialsPage() {
               {products.find(p => p.id === editProductId)?.category === 'OTT' && (
                 <div>
                   <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Subscription Duration (Months)</label>
+                  <div className="flex gap-2 mb-2">
+                      <button type="button" onClick={() => setEditSubscriptionMonths('1')} className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider border rounded transition-all ${editSubscriptionMonths === '1' ? 'border-cyan-500 text-cyan-400 bg-cyan-950/40' : 'border-cyber-border text-gray-500 hover:border-gray-500'}`}>1 Month</button>
+                      <button type="button" onClick={() => setEditSubscriptionMonths('3')} className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider border rounded transition-all ${editSubscriptionMonths === '3' ? 'border-yellow-500 text-yellow-400 bg-yellow-950/40' : 'border-cyber-border text-gray-500 hover:border-gray-500'}`}>3 Months</button>
+                      <button type="button" onClick={() => setEditSubscriptionMonths('6')} className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider border rounded transition-all ${editSubscriptionMonths === '6' ? 'border-rose-500 text-rose-400 bg-rose-950/40' : 'border-cyber-border text-gray-500 hover:border-gray-500'}`}>6 Months</button>
+                  </div>
                   <input
                     type="number"
                     min="1"
                     required
                     value={editSubscriptionMonths}
                     onChange={(e) => setEditSubscriptionMonths(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-cyber-bg border border-cyber-border rounded-lg text-cyber-text focus:outline-none focus:border-yellow-400"
+                    placeholder="Or type custom months..."
+                    className="w-full px-4 py-2.5 bg-black border border-cyber-border rounded-lg text-cyber-text focus:outline-none focus:border-yellow-400"
                   />
                 </div>
               )}

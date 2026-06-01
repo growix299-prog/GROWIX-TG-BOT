@@ -658,6 +658,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         return
 
     elif data == "view_wallet":
+        context.user_data.pop('awaiting_manual_deposit', None)
         balance = get_wallet_balance(user.id)
         wallet_text = (
             f"<b>MY WALLET</b> <tg-emoji emoji-id=\"5343777479091831702\">👛</tg-emoji>\n"
@@ -696,9 +697,25 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 InlineKeyboardButton("₹500", callback_data="deposit_500"),
                 InlineKeyboardButton("₹1000", callback_data="deposit_1000")
             ],
+            [InlineKeyboardButton("✍️ Type Custom Amount", callback_data="manual_deposit")],
             [InlineKeyboardButton("🔙 Back to Wallet", callback_data="view_wallet")]
         ]
         await query.edit_message_text(text=deposit_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
+        return
+
+    elif data == "manual_deposit":
+        context.user_data['awaiting_manual_deposit'] = True
+        prompt = (
+            f"✍️ <b>MANUAL DEPOSIT</b>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
+            f"Please type the amount you want to deposit below:\n"
+            f"<i>(Example: 150)</i>"
+        )
+        await query.edit_message_text(
+            text=prompt,
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="view_wallet")]]),
+            parse_mode="HTML"
+        )
         return
 
     elif data.startswith("deposit_"):

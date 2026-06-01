@@ -41,6 +41,70 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text = text.strip()
     supabase = get_db()
 
+    if context.user_data.get('awaiting_manual_deposit'):
+        try:
+            amount = float(text.strip())
+            if amount < 1 or amount > 10000:
+                raise ValueError("Amount out of range")
+        except ValueError:
+            await message.reply_text(
+                "❌ Please enter a valid number between ₹1 and ₹10,000.\n<i>(Example: 150)</i>",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Cancel", callback_data="view_wallet")]]),
+                parse_mode="HTML"
+            )
+            return
+
+        # Valid amount, generate payment link
+        context.user_data.pop('awaiting_manual_deposit', None)
+        
+        loading_msg = await message.reply_text("<blockquote>⏳ <i>Generating secure payment link for wallet deposit...</i></blockquote>", parse_mode="HTML")
+        
+        from telegram_bot.services.razorpay_service import create_deposit_payment_link
+        pay_res = await create_deposit_payment_link(
+            amount=amount,
+            telegram_id=user.id,
+            first_name=user.first_name
+        )
+        
+        if not pay_res.get("success"):
+            await loading_msg.edit_text(
+                text=f"❌ Failed to create payment link: {pay_res.get('error')}",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back to Wallet", callback_data="view_wallet")]])
+            )
+            return
+            
+        checkout_url = pay_res["payment_link"]
+        order_id = pay_res["order_id"]
+        
+        supabase.table("wallet_transactions").insert({
+            "telegram_id": user.id,
+            "amount": amount,
+            "type": "DEPOSIT",
+            "status": "PENDING",
+            "razorpay_order_id": order_id
+        }).execute()
+        
+        success_text = (
+            f"💳 <b>WALLET DEPOSIT INITIATED</b>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"<b>Amount:</b> ₹{amount:.2f}\n"
+            f"<b>Order ID:</b> {order_id}\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"Click the button below to complete your payment. Your wallet balance will update automatically once successful."
+        )
+        
+        pay_keyboard = [
+            [InlineKeyboardButton("🔗 Pay Now", url=checkout_url)],
+            [InlineKeyboardButton("🔙 Back to Wallet", callback_data="view_wallet")]
+        ]
+        
+        await loading_msg.edit_text(
+            text=success_text,
+            reply_markup=InlineKeyboardMarkup(pay_keyboard),
+            parse_mode="HTML"
+        )
+        return
+
     # 1. Check if user is writing a review
     if context.user_data.get('awaiting_review'):
         create_review(user.id, user.username, user.first_name, text)

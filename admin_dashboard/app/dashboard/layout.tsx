@@ -17,7 +17,8 @@ import {
   Activity,
   MessageSquareHeart,
   Wallet,
-  Megaphone
+  Megaphone,
+  Settings
 } from 'lucide-react'
 
 export default function DashboardLayout({
@@ -71,6 +72,7 @@ export default function DashboardLayout({
     { name: 'Users & Wallets', href: '/dashboard/users', icon: Wallet },
     { name: 'Customer Reviews', href: '/dashboard/reviews', icon: MessageSquareHeart },
     { name: 'Stock Broadcast', href: '/dashboard/broadcast', icon: Megaphone },
+    { name: 'Admin Settings', href: '/dashboard/settings', icon: Settings },
   ]
 
   return (

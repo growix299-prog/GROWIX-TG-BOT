@@ -24,6 +24,7 @@ export default function CredentialsPage() {
   // Bulk form
   const [bulkText, setBulkText] = useState('')
   const [bulkSeparator, setBulkSeparator] = useState(':') // ':' or ',' or '|'
+  const [bulkSubscriptionMonths, setBulkSubscriptionMonths] = useState('1')
 
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
@@ -220,15 +221,8 @@ export default function CredentialsPage() {
 
       const parts = cleanLine.split(bulkSeparator)
       if (parts.length >= 2) {
-        let months = 1;
         let pass = parts.slice(1).join(bulkSeparator).trim();
-        
-        if (isOtt && parts.length >= 3) {
-            months = parseInt(parts[parts.length - 1].trim()) || 1;
-            pass = parts.slice(1, -1).join(bulkSeparator).trim();
-        } else if (!isOtt) {
-            months = 0;
-        }
+        let months = isOtt ? parseInt(bulkSubscriptionMonths) || 1 : 0;
 
         insertPayload.push({
           product_id: productId,
@@ -409,9 +403,29 @@ export default function CredentialsPage() {
                   </div>
                   <div className="flex items-end text-[10px] text-gray-500 leading-tight">
                     Format line-by-line:<br/>
-                    {products.find(p => p.id === productId)?.category === 'OTT' ? `username${bulkSeparator}password${bulkSeparator}months` : `username${bulkSeparator}password`}
+                    username{bulkSeparator}password
                   </div>
                 </div>
+
+                {products.find(p => p.id === productId)?.category === 'OTT' && (
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Apply Subscription Duration to all (Months)</label>
+                    <div className="flex gap-2 mb-2">
+                        <button type="button" onClick={() => setBulkSubscriptionMonths('1')} className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider border rounded transition-all ${bulkSubscriptionMonths === '1' ? 'border-cyan-500 text-cyan-400 bg-cyan-950/40 shadow-[0_0_10px_rgba(34,211,238,0.2)]' : 'border-cyber-border text-gray-500 hover:border-gray-500 hover:text-gray-300'}`}>1 Month</button>
+                        <button type="button" onClick={() => setBulkSubscriptionMonths('3')} className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider border rounded transition-all ${bulkSubscriptionMonths === '3' ? 'border-yellow-500 text-yellow-400 bg-yellow-950/40 shadow-[0_0_10px_rgba(234,179,8,0.2)]' : 'border-cyber-border text-gray-500 hover:border-gray-500 hover:text-gray-300'}`}>3 Months</button>
+                        <button type="button" onClick={() => setBulkSubscriptionMonths('6')} className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wider border rounded transition-all ${bulkSubscriptionMonths === '6' ? 'border-rose-500 text-rose-400 bg-rose-950/40 shadow-[0_0_10px_rgba(244,63,94,0.2)]' : 'border-cyber-border text-gray-500 hover:border-gray-500 hover:text-gray-300'}`}>6 Months</button>
+                    </div>
+                    <input
+                      type="number"
+                      min="1"
+                      required
+                      value={bulkSubscriptionMonths}
+                      onChange={(e) => setBulkSubscriptionMonths(e.target.value)}
+                      placeholder="Or type custom months (e.g. 12)"
+                      className="w-full px-4 py-2 bg-black border border-cyber-border rounded-lg text-cyber-text placeholder-gray-600 focus:outline-none focus:border-yellow-400"
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Bulk Account Matrix</label>

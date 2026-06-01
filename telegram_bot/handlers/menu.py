@@ -758,14 +758,22 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     elif data == "wallet_history":
         transactions = get_wallet_transactions(user.id, limit=10)
         if not transactions:
+            text = (
+                f"<b>TRANSACTION HISTORY</b> <tg-emoji emoji-id=\"5940804519083383006\">📜</tg-emoji>\n"
+                f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
+                f"<i>No transactions yet. Add funds to get started!</i>"
+            )
             await query.edit_message_text(
-                text="<blockquote><tg-emoji emoji-id=\"5416117059207572332\">🧾</tg-emoji> <b>TRANSACTION HISTORY</b>\n\nNo transactions yet. Add funds to get started!</blockquote>",
+                text=text,
                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Back to Wallet", callback_data="view_wallet")]]),
                 parse_mode="HTML"
             )
             return
 
-        history_text = "<tg-emoji emoji-id=\"5416117059207572332\">🧾</tg-emoji> 𝐓𝐑𝐀𝐍𝐒𝐀𝐂𝐓𝐈𝐎𝐍 𝐇𝐈𝐒𝐓𝐎𝐑𝐘\n▬▬▬▬▬▬▬▬▬▬▬\n\n"
+        history_text = (
+            f"<b>TRANSACTION HISTORY</b> <tg-emoji emoji-id=\"5940804519083383006\">📜</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
+        )
         for idx, txn in enumerate(transactions, 1):
             t_type = txn.get("transaction_type", "")
             if t_type == "DEPOSIT":

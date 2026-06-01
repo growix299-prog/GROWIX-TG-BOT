@@ -480,10 +480,18 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
 
         is_in_stock = False
         stock_label = ""
+        stock_by_duration = {1: 0, 3: 0, 6: 0}
         
         try:
-            stock_resp = supabase.table("credentials").select("id").eq("product_id", product["id"]).eq("status", "UNUSED").execute()
-            stock_count = len(stock_resp.data) if stock_resp.data else 0
+            stock_resp = supabase.table("credentials").select("id, subscription_months").eq("product_id", product["id"]).eq("status", "UNUSED").execute()
+            if stock_resp.data:
+                stock_count = len(stock_resp.data)
+                for cred in stock_resp.data:
+                    m = cred.get("subscription_months")
+                    if m in stock_by_duration:
+                        stock_by_duration[m] += 1
+            else:
+                stock_count = 0
         except Exception as e:
             logger.error(f"Error checking stock: {str(e)}")
             stock_count = 0
@@ -524,9 +532,20 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         
         keyboard = []
         if product['category'] == 'OTT':
-            keyboard.append([InlineKeyboardButton(f"💳 Buy 1 Month (₹{float(product.get('price_1m') or 0):.2f})", callback_data=f"buy_{product['id']}_1")])
-            keyboard.append([InlineKeyboardButton(f"💳 Buy 3 Months (₹{float(product.get('price_3m') or 0):.2f})", callback_data=f"buy_{product['id']}_3")])
-            keyboard.append([InlineKeyboardButton(f"💳 Buy 6 Months (₹{float(product.get('price_6m') or 0):.2f})", callback_data=f"buy_{product['id']}_6")])
+            if stock_by_duration[1] > 0:
+                keyboard.append([InlineKeyboardButton(f"💳 Buy 1 Month (₹{float(product.get('price_1m') or 0):.2f})", callback_data=f"buy_{product['id']}_1")])
+            else:
+                keyboard.append([InlineKeyboardButton(f"❌ 1 Month (Out of Stock)", callback_data="ignore")])
+                
+            if stock_by_duration[3] > 0:
+                keyboard.append([InlineKeyboardButton(f"💳 Buy 3 Months (₹{float(product.get('price_3m') or 0):.2f})", callback_data=f"buy_{product['id']}_3")])
+            else:
+                keyboard.append([InlineKeyboardButton(f"❌ 3 Months (Out of Stock)", callback_data="ignore")])
+                
+            if stock_by_duration[6] > 0:
+                keyboard.append([InlineKeyboardButton(f"💳 Buy 6 Months (₹{float(product.get('price_6m') or 0):.2f})", callback_data=f"buy_{product['id']}_6")])
+            else:
+                keyboard.append([InlineKeyboardButton(f"❌ 6 Months (Out of Stock)", callback_data="ignore")])
         else:
             keyboard.append([InlineKeyboardButton("💳 Buy Now", callback_data=f"buy_{product['id']}_0")])
             
@@ -537,6 +556,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode="HTML"
         )
+
+    elif data == "ignore":
+        await query.answer("❌ This duration is currently out of stock.", show_alert=True)
+        return
 
     elif data.startswith("buy_"):
         parts = data.split("_")

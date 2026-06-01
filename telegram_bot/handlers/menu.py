@@ -628,7 +628,13 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     elif data.startswith("walletpay_"):
         parts = data.split("_")
         product_id = parts[1]
-        qty = int(parts[2]) if len(parts) > 2 else 1
+        
+        if len(parts) > 3:
+            months = int(parts[2])
+            qty = int(parts[3])
+        else:
+            months = 0
+            qty = int(parts[2]) if len(parts) > 2 else 1
         
         try:
             response = supabase.table("products").select("*").eq("id", product_id).execute()
@@ -640,7 +646,11 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_text("❌ Product not found.", parse_mode="HTML")
             return
 
-        price = float(product["price"]) * qty
+        if product["category"] == "OTT" and months > 0:
+            price = float(product.get(f"price_{months}m") or 0) * qty
+        else:
+            price = float(product["price"]) * qty
+            
         wallet_balance = get_wallet_balance(user.id)
 
         if wallet_balance < price:
@@ -837,7 +847,14 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     elif data.startswith("rzpterms_"):
         parts = data.split("_")
         product_id = parts[1]
-        qty = parts[2] if len(parts) > 2 else "1"
+        
+        if len(parts) > 3:
+            months = int(parts[2])
+            qty = int(parts[3])
+        else:
+            months = 0
+            qty = int(parts[2]) if len(parts) > 2 else 1
+            
         terms_text = (
             f"⚠️ <b>RAZORPAY TERMS & CONDITIONS</b> ⚠️\n\n"
             f"1. We use Razorpay for secure automated payments (Cards/UPI/Netbanking).\n"
@@ -847,7 +864,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             f"Do you agree to these terms?"
         )
         keyboard = [
-            [InlineKeyboardButton("✅ Agree", callback_data=f"rzpagree_{product_id}_{qty}")],
+            [InlineKeyboardButton("✅ Agree", callback_data=f"rzpagree_{product_id}_{months}_{qty}")],
             [InlineKeyboardButton("❌ Decline", callback_data="main_menu")]
         ]
         await query.edit_message_text(text=terms_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
@@ -855,7 +872,13 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     elif data.startswith("rzpagree_"):
         parts = data.split("_")
         product_id = parts[1]
-        qty = int(parts[2]) if len(parts) > 2 else 1
+        
+        if len(parts) > 3:
+            months = int(parts[2])
+            qty = int(parts[3])
+        else:
+            months = 0
+            qty = int(parts[2]) if len(parts) > 2 else 1
         
         loading_text = (
             f"<b>ORDER INITIATED</b> <tg-emoji emoji-id=\"6230853345733510932\">💰</tg-emoji>\n"
@@ -874,7 +897,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_text("❌ <b>Product not found.</b>", parse_mode="HTML")
             return
 
-        price = float(product["price"]) * qty
+        if product["category"] == "OTT" and months > 0:
+            price = float(product.get(f"price_{months}m") or 0) * qty
+        else:
+            price = float(product["price"]) * qty
         
         pay_res = await create_payment_link(
             amount=price,

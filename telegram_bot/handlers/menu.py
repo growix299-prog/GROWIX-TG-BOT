@@ -66,11 +66,10 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if not is_member:
         banner = (
-            f"<blockquote>"
-            f"<tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji> <b>ACCESS DENIED</b> <tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji>\n\n"
-            f"Hello {html.escape(user.first_name)}! To unlock our automated instant delivery of gaming credentials and premium OTT services, you must join our official channel.\n\n"
+            f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"Hello <b>{html.escape(user.first_name)}</b>! To unlock our automated instant delivery of gaming credentials and premium OTT services, you must join our official channel.\n\n"
             f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
-            f"</blockquote>"
         )
         keyboard = [
             [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
@@ -300,11 +299,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         else:
             await query.answer("❌ First join the channel!", show_alert=True)
             banner = (
-                f"<blockquote>"
-                f"<tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji> <b>ACCESS DENIED</b> <tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji>\n\n"
+                f"<b>ACCESS DENIED</b> <tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji>\n"
+                f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
                 f"You haven't joined our channel yet! First join the channel to continue.\n\n"
                 f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
-                f"</blockquote>"
             )
             keyboard = [
                 [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
@@ -324,11 +322,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         is_member = await check_channel_membership(user.id, context)
         if not is_member:
             banner = (
-                f"<blockquote>"
-                f"<tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji> <b>ACCESS DENIED</b> <tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji>\n\n"
+                f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji>\n"
+                f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
                 f"First join the channel to unlock the bot!\n\n"
                 f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
-                f"</blockquote>"
             )
             keyboard = [
                 [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
@@ -374,11 +371,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         if not is_member:
             await query.answer("❌ First join the channel!", show_alert=True)
             banner = (
-                f"<blockquote>"
-                f"<tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji> <b>ACCESS DENIED</b> <tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji>\n\n"
+                f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji>\n"
+                f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
                 f"First join the channel to view products!\n\n"
                 f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
-                f"</blockquote>"
             )
             keyboard = [
                 [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],

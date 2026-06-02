@@ -41,6 +41,26 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text = text.strip()
     supabase = get_db()
 
+    from telegram_bot.handlers.menu import check_channel_membership
+    is_member = await check_channel_membership(user.id, context)
+    if not is_member:
+        banner = (
+            f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"You must join our official channel to continue using the bot.\n\n"
+            f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
+        )
+        keyboard = [
+            [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
+            [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
+        ]
+        await message.reply_text(
+            text=banner,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode="HTML"
+        )
+        return
+
     if context.user_data.get('awaiting_manual_deposit'):
         try:
             amount = float(text.strip())

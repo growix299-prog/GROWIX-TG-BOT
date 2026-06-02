@@ -286,6 +286,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
             )
             try:
+                await query.message.reply_text(
+                    text="Loading interface...",
+                    reply_markup=get_reply_keyboard()
+                )
                 await query.edit_message_text(
                     text=banner,
                     reply_markup=get_main_menu_keyboard(),

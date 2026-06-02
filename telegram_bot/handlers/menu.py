@@ -66,7 +66,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if not is_member:
         banner = (
-            f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji>\n"
+            f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
             f"Hello <b>{html.escape(user.first_name)}</b>! To unlock our automated instant delivery of gaming credentials and premium OTT services, you must join our official channel.\n\n"
             f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
@@ -239,6 +239,27 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     data = query.data
     user = query.from_user
     supabase = get_db()
+    
+    if data != "check_joined":
+        is_member = await check_channel_membership(user.id, context)
+        if not is_member:
+            await query.answer("❌ You must join our channel to use the bot!", show_alert=True)
+            banner = (
+                f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
+                f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+                f"You must join our official channel to continue using the bot.\n\n"
+                f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
+            )
+            keyboard = [
+                [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
+                [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
+            ]
+            await query.edit_message_text(
+                text=banner,
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode="HTML"
+            )
+            return
 
     if data == "coming_soon":
         await query.answer("⏳ This feature is coming soon!", show_alert=True)
@@ -303,7 +324,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         else:
             await query.answer("❌ First join the channel!", show_alert=True)
             banner = (
-                f"<b>ACCESS DENIED</b> <tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji>\n"
+                f"<b>ACCESS DENIED</b> <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
                 f"You haven't joined our channel yet! First join the channel to continue.\n\n"
                 f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
@@ -323,25 +344,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         context.user_data.pop('awaiting_product_selection', None)
         context.user_data.pop('awaiting_quantity_for_product', None)
         
-        is_member = await check_channel_membership(user.id, context)
-        if not is_member:
-            banner = (
-                f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji>\n"
-                f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"First join the channel to unlock the bot!\n\n"
-                f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
-            )
-            keyboard = [
-                [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
-                [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
-            ]
-            await query.edit_message_text(
-                text=banner,
-                reply_markup=InlineKeyboardMarkup(keyboard),
-                parse_mode="HTML"
-            )
-            return
-
         banner = (
             f"<b>HI</b> 🫲<tg-emoji emoji-id=\"5456258317477230911\">😎</tg-emoji>🫱 <b>{html.escape(user.first_name)}</b>\n"
             f"<b>WELCOME TO</b> <tg-emoji emoji-id=\"5352625743081775722\">🔘</tg-emoji>\n"
@@ -371,26 +373,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             )
 
     elif data.startswith("cat_"):
-        is_member = await check_channel_membership(user.id, context)
-        if not is_member:
-            await query.answer("❌ First join the channel!", show_alert=True)
-            banner = (
-                f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5318911503938634641\">🔴</tg-emoji>\n"
-                f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"First join the channel to view products!\n\n"
-                f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
-            )
-            keyboard = [
-                [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
-                [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
-            ]
-            await query.edit_message_text(
-                text=banner,
-                reply_markup=InlineKeyboardMarkup(keyboard),
-                parse_mode="HTML"
-            )
-            return
-
         category = data.split("_")[1]
         
         try:

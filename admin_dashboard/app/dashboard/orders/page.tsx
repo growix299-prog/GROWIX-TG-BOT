@@ -150,51 +150,63 @@ export default function OrdersPage() {
           <div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
-        <div className="glass-panel rounded-xl border border-cyber-border/80 overflow-hidden shadow-glass">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+        <div className="glass-panel rounded-xl border border-cyber-border/80 shadow-glass overflow-hidden">
+          <div className="max-h-[calc(100vh-260px)] overflow-y-auto overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs relative">
               <thead>
-                <tr className="border-b border-cyber-border text-gray-400 font-sfpro bg-cyber-fbi/40">
-                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Transaction Reference</th>
-                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Date & Time</th>
-                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Client TG ID</th>
-                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Email</th>
-                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Product Item</th>
-                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Category</th>
-                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold text-right">Price paid</th>
-                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold text-center">Payment Status</th>
-                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold text-center">Delivery Status</th>
-                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold text-center">Email Sent</th>
-                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold text-center">Actions</th>
+                <tr className="border-b border-cyber-border text-gray-400 font-sfpro bg-[#0a0c10] sticky top-0 z-10 shadow-sm">
+                  <th className="py-2.5 px-3 uppercase tracking-wider font-bold bg-[#0a0c10]">Transaction Reference</th>
+                  <th className="py-2.5 px-3 uppercase tracking-wider font-bold bg-[#0a0c10]">Date & Time</th>
+                  <th className="py-2.5 px-3 uppercase tracking-wider font-bold bg-[#0a0c10]">Client TG ID</th>
+                  <th className="py-2.5 px-3 uppercase tracking-wider font-bold bg-[#0a0c10]">Email</th>
+                  <th className="py-2.5 px-3 uppercase tracking-wider font-bold bg-[#0a0c10]">Product Item</th>
+                  <th className="py-2.5 px-3 uppercase tracking-wider font-bold bg-[#0a0c10]">Category</th>
+                  <th className="py-2.5 px-3 uppercase tracking-wider font-bold text-right bg-[#0a0c10]">Price paid</th>
+                  <th className="py-2.5 px-3 uppercase tracking-wider font-bold text-center bg-[#0a0c10]">Payment Status</th>
+                  <th className="py-2.5 px-3 uppercase tracking-wider font-bold text-center bg-[#0a0c10]">Delivery Status</th>
+                  <th className="py-2.5 px-3 uppercase tracking-wider font-bold text-center bg-[#0a0c10]">Email Sent</th>
+                  <th className="py-2.5 px-3 uppercase tracking-wider font-bold text-center bg-[#0a0c10]">Actions</th>
                 </tr>
               </thead>
-              <tbody className="font-sfpro divide-y divide-cyber-border/30">
+              <tbody className="font-sfpro divide-y divide-cyber-border/30 bg-cyber-bg/40">
                 {filteredOrders.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-16 text-center text-gray-500 uppercase tracking-widest text-[10px]">
+                    <td colSpan={11} className="py-16 text-center text-gray-500 uppercase tracking-widest text-[10px]">
                       <Receipt className="w-12 h-12 mx-auto mb-4 text-gray-600 animate-pulse" />
                       <span>No matching transaction logs found</span>
                     </td>
                   </tr>
                 ) : (
                   filteredOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-cyber-card/30 transition-all font-medium">
-                      <td className="py-4 px-4 font-bold text-yellow-400">
-                        <code>{order.payment_id || order.id.slice(0, 16)}</code>
+                    <tr key={order.id} className="hover:bg-cyber-card/30 transition-all font-medium border-b border-cyber-border/20">
+                      <td className="py-2.5 px-3 font-bold text-yellow-400">
+                        <div className="max-w-[160px] truncate select-all font-mono" title={order.payment_id || order.id}>
+                          {order.payment_id || order.id.slice(0, 16)}
+                        </div>
                       </td>
-                      <td className="py-4 px-4 text-gray-400 font-medium text-[11px]">
-                        {new Date(order.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}
+                      <td className="py-2.5 px-3 text-gray-400 font-medium text-[11px]">
+                        <div className="w-[125px]">
+                          {new Date(order.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}
+                        </div>
                       </td>
-                      <td className="py-4 px-4 text-gray-400 font-bold">@{order.telegram_id}</td>
-                      <td className="py-4 px-4 text-gray-400 font-medium">
-                        {order.customer_email || <span className="text-gray-600 text-[10px]">Not Provided</span>}
+                      <td className="py-2.5 px-3 text-gray-400 font-bold">
+                        <div className="max-w-[110px] truncate" title={`@${order.telegram_id}`}>
+                          @{order.telegram_id}
+                        </div>
                       </td>
-                      <td className="py-4 px-4 font-bold text-white">
-                        {order.products?.name}
-                        {order.subscription_months > 0 && <span className="ml-1 text-gray-400 font-normal">({order.subscription_months} Month{order.subscription_months > 1 ? 's' : ''})</span>}
-                        {order.quantity > 1 && <span className="ml-1 text-yellow-500 text-[10px]">x{order.quantity}</span>}
+                      <td className="py-2.5 px-3 text-gray-400 font-medium">
+                        <div className="max-w-[130px] truncate" title={order.customer_email || 'Not Provided'}>
+                          {order.customer_email || <span className="text-gray-600 text-[10px]">Not Provided</span>}
+                        </div>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-2.5 px-3 font-bold text-white">
+                        <div className="max-w-[160px] truncate" title={order.products?.name}>
+                          {order.products?.name}
+                          {order.subscription_months > 0 && <span className="ml-1 text-gray-400 font-normal">({order.subscription_months}M)</span>}
+                          {order.quantity > 1 && <span className="ml-1 text-yellow-500 text-[10px]">x{order.quantity}</span>}
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3">
                         <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
                           order.products?.category === 'OTT' 
                             ? 'bg-purple-950/70 text-purple-400 border border-purple-500/10' 
@@ -203,10 +215,10 @@ export default function OrdersPage() {
                           {order.products?.category}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-right text-emerald-400 font-bold">₹{parseFloat(order.amount).toFixed(2)}</td>
+                      <td className="py-2.5 px-3 text-right text-emerald-400 font-bold">₹{parseFloat(order.amount).toFixed(2)}</td>
                       
                       {/* Payment Badge */}
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-2.5 px-3 text-center">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                           order.status === 'COMPLETED' ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/20' :
                           order.status === 'FAILED' ? 'bg-red-950 text-red-400 border border-red-500/20' :
@@ -217,7 +229,7 @@ export default function OrdersPage() {
                       </td>
 
                       {/* Delivery Badge */}
-                      <td className="py-4 px-4 text-center font-bold">
+                      <td className="py-2.5 px-3 text-center font-bold">
                         <span className={`px-2 py-0.5 rounded text-[10px] ${
                           order.delivery_status === 'DELIVERED' ? 'bg-yellow-950 text-yellow-400 border border-yellow-500/20' :
                           order.delivery_status === 'MANUAL_PROCESSING' ? 'bg-purple-950 text-purple-400 border border-purple-500/20 animate-pulse' :
@@ -231,7 +243,7 @@ export default function OrdersPage() {
                       </td>
 
                       {/* Email Status Badge */}
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-2.5 px-3 text-center">
                         {order.email_sent ? (
                           <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/20">SENT</span>
                         ) : (
@@ -240,13 +252,13 @@ export default function OrdersPage() {
                       </td>
 
                       {/* Actions */}
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-2.5 px-3 text-center">
                         <button
                           onClick={() => handleDeleteOrder(order.id, order.payment_id)}
                           className="p-1.5 bg-red-950/30 border border-red-500/30 text-red-400 rounded hover:bg-red-900/50 hover:text-red-300 transition-colors"
                           title="Permanently Delete Order"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </td>
                     </tr>

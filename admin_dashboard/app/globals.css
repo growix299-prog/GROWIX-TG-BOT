@@ -43,16 +43,17 @@ body {
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: #050608;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1d242e;
-  border-radius: 3px;
+  background: rgba(234, 179, 8, 0.3);
+  border-radius: 4px;
+  border: 1px solid rgba(234, 179, 8, 0.1);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #00f0ff;
+  background: rgba(234, 179, 8, 0.7);
 }

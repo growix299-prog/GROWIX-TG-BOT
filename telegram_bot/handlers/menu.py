@@ -504,9 +504,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         )
         if product['category'] in ('OTT', 'VideoEditing', 'AI'):
             details += (
-                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>1 Month:</b> ₹{float(product.get('price_1m') or 0):.2f}  <i>({stock_by_duration[1]} in stock)</i>\n"
-                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>3 Months:</b> ₹{float(product.get('price_3m') or 0):.2f}  <i>({stock_by_duration[3]} in stock)</i>\n"
-                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>6 Months:</b> ₹{float(product.get('price_6m') or 0):.2f}  <i>({stock_by_duration[6]} in stock)</i>\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>1 Month:</b> ₹{float(product.get('price_1m') or 0):.2f}  <b>[Stock: {stock_by_duration[1]}]</b>\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>3 Months:</b> ₹{float(product.get('price_3m') or 0):.2f}  <b>[Stock: {stock_by_duration[3]}]</b>\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>6 Months:</b> ₹{float(product.get('price_6m') or 0):.2f}  <b>[Stock: {stock_by_duration[6]}]</b>\n"
             )
         else:
             details += f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>Price:</b> ₹{float(product['price']):.2f}\n"
@@ -571,7 +571,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         stock_count = 0
         try:
             q = supabase.table("credentials").select("id").eq("product_id", product_id).eq("status", "UNUSED")
-            if product["category"] in ("OTT", "VideoEditing") and months > 0:
+            if product["category"] in ("OTT", "VideoEditing", "AI") and months > 0:
                 q = q.eq("subscription_months", months)
             stock_check = q.execute()
             stock_count = len(stock_check.data) if stock_check.data else 0
@@ -601,7 +601,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         
         keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="main_menu")]]
         
-        duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing") and months > 0 else ""
+        duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing", "AI") and months > 0 else ""
         
         anim_emoji = get_product_animated_emoji(product['name'])
         await query.edit_message_text(

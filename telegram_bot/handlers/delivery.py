@@ -267,7 +267,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await message.reply_text(f"⏳ <i>Fetching {qty} {product['category'].lower()} credentials, please wait...</i>", parse_mode="HTML")
             
             q = supabase.table("credentials").select("*").eq("product_id", product["id"]).eq("status", "UNUSED")
-            if product["category"] in ("OTT", "VideoEditing") and active_order.get("subscription_months", 0) > 0:
+            if product["category"] in ("OTT", "VideoEditing", "AI") and active_order.get("subscription_months", 0) > 0:
                 q = q.eq("subscription_months", active_order.get("subscription_months"))
             credentials_response = q.limit(qty).execute()
             
@@ -285,7 +285,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 }).eq("id", active_order["id"]).execute()
                 
                 months = active_order.get("subscription_months", 0)
-                duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing") and months > 0 else ""
+                duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing", "AI") and months > 0 else ""
                 product_display_name = f"{product['name']}{duration_text}"
                 
                 # Send credentials via Telegram FIRST
@@ -363,7 +363,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         # Check stock
         q = supabase.table("credentials").select("id").eq("product_id", product["id"]).eq("status", "UNUSED")
-        if product["category"] in ("OTT", "VideoEditing") and months > 0:
+        if product["category"] in ("OTT", "VideoEditing", "AI") and months > 0:
             q = q.eq("subscription_months", months)
         stock_resp = q.execute()
         stock_count = len(stock_resp.data) if stock_resp.data else 0
@@ -373,7 +373,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
             
         # Proceed to checkout
-        if product["category"] in ("OTT", "VideoEditing") and months > 0:
+        if product["category"] in ("OTT", "VideoEditing", "AI") and months > 0:
             price = float(product.get(f"price_{months}m") or 0)
             product_name_display = f"{product['name']} ({months} Months)"
         else:
@@ -445,7 +445,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         matched_name = matches[0]
         selected_product = product_names[matched_name]
         
-        if selected_product['category'] in ('OTT', 'VideoEditing'):
+        if selected_product['category'] in ('OTT', 'VideoEditing', 'AI'):
             from telegram_bot.handlers.menu import get_product_animated_emoji
             anim_emoji = get_product_animated_emoji(selected_product['name'])
             
@@ -480,9 +480,9 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
                 f"<tg-emoji emoji-id=\"5458603043203327669\">🔔</tg-emoji> <b>Name:</b> {anim_emoji} <b>{selected_product['name']}</b>\n\n"
                 f"<tg-emoji emoji-id=\"5217822164362739968\">🗂️</tg-emoji> <b>Category:</b> <b>{selected_product['category']}</b>\n"
-                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>1 Month:</b> ₹{float(selected_product.get('price_1m') or 0):.2f}\n"
-                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>3 Months:</b> ₹{float(selected_product.get('price_3m') or 0):.2f}\n"
-                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>6 Months:</b> ₹{float(selected_product.get('price_6m') or 0):.2f}\n\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>1 Month:</b> ₹{float(selected_product.get('price_1m') or 0):.2f}  <b>[Stock: {stock_by_duration[1]}]</b>\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>3 Months:</b> ₹{float(selected_product.get('price_3m') or 0):.2f}  <b>[Stock: {stock_by_duration[3]}]</b>\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>6 Months:</b> ₹{float(selected_product.get('price_6m') or 0):.2f}  <b>[Stock: {stock_by_duration[6]}]</b>\n\n"
                 f"<b>INSTANT AUTO-DELIVERY</b> <tg-emoji emoji-id=\"5456140674028019486\">⚡</tg-emoji><tg-emoji emoji-id=\"5456140674028019486\">⚡</tg-emoji>\n"
                 f"<b>INSTANT WALLET DEPOSIT</b> <tg-emoji emoji-id=\"5417924076503062111\">💳</tg-emoji><tg-emoji emoji-id=\"5417924076503062111\">💳</tg-emoji>\n\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"

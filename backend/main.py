@@ -185,16 +185,16 @@ async def process_digital_delivery(order_id: str, payment_id: str, amount: float
                 f"Thank you for purchasing <b>{qty}x {product_display_name}</b>!\n"
                 f"💰 <b>Amount Paid:</b> ₹{amount:.2f}\n\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"✨ <b>YOUR LOGIN CREDENTIALS</b> <tg-emoji emoji-id=\"5343553259971822765\">🚀</tg-emoji>\n\n"
+                f"✨ <b>YOUR LOGIN CREDENTIALS</b> 🚀\n\n"
             )
             for idx, credential in enumerate(credentials, 1):
-                msg += f"<b>ACCOUNT {idx}</b> <tg-emoji emoji-id=\"5427009714745517609\">🔑</tg-emoji>\n"
-                msg += f"👤 <b>Username:</b> <code>{html.escape(credential['email_or_username'])}</code>\n"
-                msg += f"🔒 <b>Password:</b> <code>{html.escape(credential['password'])}</code>\n\n"
+                msg += f"<b>ACCOUNT {idx}</b> 🔑\n"
+                msg += f"👤 <b>Username:</b> <code>{html.escape(str(credential['email_or_username']))}</code>\n"
+                msg += f"🔒 <b>Password:</b> <code>{html.escape(str(credential['password']))}</code>\n\n"
                 
             msg += (
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"<tg-emoji emoji-id=\"5463139369978174548\">⚠️</tg-emoji> <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
+                f"⚠️ <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
                 f"📧 <b>Want credentials on Email?</b>\n"
                 f"<i>Type your email address in this chat right now to receive them via email, or tap Skip!</i>\n"
             )
@@ -213,8 +213,9 @@ async def process_digital_delivery(order_id: str, payment_id: str, amount: float
                     supabase.table("credentials").update({"status": "USED"}).eq("id", cred["id"]).execute()
                 
                 import json
-                creds_to_save = [{"email_or_username": c["email_or_username"], "password": c["password"]} for c in credentials]
+                creds_to_save = [{"email_or_username": str(c["email_or_username"]), "password": str(c["password"])} for c in credentials]
                 supabase.table("orders").update({
+                    "status": "COMPLETED",
                     "delivery_status": "AWAITING_EMAIL_ONLY",
                     "delivered_credentials": creds_to_save
                 }).eq("id", order["id"]).execute()

@@ -699,16 +699,16 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 f"💰 <b>Amount Paid:</b> ₹{price:.2f} (from Wallet)\n"
                 f"👛 <b>Remaining Balance:</b> ₹{get_wallet_balance(user.id):.2f}\n\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"✨ <b>YOUR LOGIN CREDENTIALS</b> <tg-emoji emoji-id=\"5343553259971822765\">🚀</tg-emoji>\n\n"
+                f"✨ <b>YOUR LOGIN CREDENTIALS</b> 🚀\n\n"
             )
             for idx, credential in enumerate(credentials, 1):
-                msg += f"<b>ACCOUNT {idx}</b> <tg-emoji emoji-id=\"5427009714745517609\">🔑</tg-emoji>\n"
-                msg += f"👤 <b>Username:</b> <code>{html.escape(credential['email_or_username'])}</code>\n"
-                msg += f"🔒 <b>Password:</b> <code>{html.escape(credential['password'])}</code>\n\n"
+                msg += f"<b>ACCOUNT {idx}</b> 🔑\n"
+                msg += f"👤 <b>Username:</b> <code>{html.escape(str(credential['email_or_username']))}</code>\n"
+                msg += f"🔒 <b>Password:</b> <code>{html.escape(str(credential['password']))}</code>\n\n"
                 
             msg += (
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"<tg-emoji emoji-id=\"5463139369978174548\">⚠️</tg-emoji> <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
+                f"⚠️ <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
                 f"📧 <b>Want credentials on Email?</b>\n"
                 f"<i>Type your email address in this chat right now to receive them via email, or tap Skip!</i>\n"
             )
@@ -724,7 +724,13 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 # Message sent successfully! Mark as USED
                 for cred in credentials:
                     supabase.table("credentials").update({"status": "USED"}).eq("id", cred["id"]).execute()
-                update_order_completed(order_data["id"], "DELIVERED")
+                
+                creds_to_save = [{"email_or_username": str(c["email_or_username"]), "password": str(c["password"])} for c in credentials]
+                supabase.table("orders").update({
+                    "status": "COMPLETED",
+                    "delivery_status": "AWAITING_EMAIL_ONLY",
+                    "delivered_credentials": creds_to_save
+                }).eq("id", order_data["id"]).execute()
                 
                 # Set up the next step for email collection
                 context.user_data['awaiting_optional_email'] = {
@@ -738,7 +744,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 # Refund wallet since delivery failed
                 refund_wallet_balance(user.id, price, description=f"Refund: Delivery failed for {product['name']}")
                 update_order_completed(order_data["id"], "FAILED_DELIVERY")
-                await query.edit_message_text("❌ Delivery failed due to a system error. Your wallet has been refunded.", parse_mode="HTML")
+                import traceback
+                err_trace = traceback.format_exc()
+                await query.edit_message_text(f"❌ Delivery failed due to a system error. Your wallet has been refunded.\n\nError: <pre>{html.escape(err_trace[-800:])}</pre>", parse_mode="HTML")
         else:
             update_order_completed(order_data["id"], "MANUAL_PROCESSING")
             msg = (

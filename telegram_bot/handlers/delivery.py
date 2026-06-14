@@ -277,7 +277,12 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 for cred in credentials:
                     mark_credential_used(cred["id"])
                     
-                update_order_completed(active_order["id"], "DELIVERED")
+                creds_to_save = [{"email_or_username": str(c["email_or_username"]), "password": str(c["password"])} for c in credentials]
+                supabase.table("orders").update({
+                    "status": "COMPLETED",
+                    "delivery_status": "AWAITING_EMAIL_ONLY",
+                    "delivered_credentials": creds_to_save
+                }).eq("id", active_order["id"]).execute()
                 
                 months = active_order.get("subscription_months", 0)
                 duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing") and months > 0 else ""
@@ -285,20 +290,20 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 
                 # Send credentials via Telegram FIRST
                 msg = (
-                    f"<b>PAYMENT SUCCESSFUL</b> <tg-emoji emoji-id=\"6093648802986592017\">✅</tg-emoji>\n"
+                    f"<b>PAYMENT SUCCESSFUL</b> ✅\n"
                     f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
-                    f"✨ Your {qty} login credentials for <b>{product_display_name}</b> are ready! <tg-emoji emoji-id=\"5343553259971822765\">🚀</tg-emoji>\n\n"
+                    f"✨ Your {qty} login credentials for <b>{product_display_name}</b> are ready! 🚀\n\n"
                 )
                 
                 for idx, credential in enumerate(credentials, 1):
-                    msg += f"<b>ACCOUNT {idx}</b> <tg-emoji emoji-id=\"5427009714745517609\">🔑</tg-emoji>\n"
-                    msg += f"👤 <b>Username:</b> <code>{credential['email_or_username']}</code>\n"
-                    msg += f"🔒 <b>Password:</b> <code>{credential['password']}</code>\n\n"
+                    msg += f"<b>ACCOUNT {idx}</b> 🔑\n"
+                    msg += f"👤 <b>Username:</b> <code>{str(credential['email_or_username'])}</code>\n"
+                    msg += f"🔒 <b>Password:</b> <code>{str(credential['password'])}</code>\n\n"
                     
                 msg += (
                     f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                    f"<tg-emoji emoji-id=\"5463139369978174548\">⚠️</tg-emoji> <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
-                    f"<tg-emoji emoji-id=\"5206607081334906820\">✅</tg-emoji> <b>Thank you {html.escape(user.first_name)} for shopping with us!</b>\n"
+                    f"⚠️ <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
+                    f"✅ <b>Thank you {html.escape(user.first_name)} for shopping with us!</b>\n"
                 )
                 
                 await message.reply_text(text=msg, parse_mode="HTML")

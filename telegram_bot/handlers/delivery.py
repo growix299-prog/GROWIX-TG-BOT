@@ -171,11 +171,77 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             logger.error(f"Error sending email: {e}")
             await message.reply_text(
-                f"❌ Failed to send email. Please contact support.",
+                f"❌ <b>Error:</b> Could not send email. Please contact support.",
                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]]),
                 parse_mode="HTML"
             )
         return
+
+    # 3. Check database for AWAITING_EMAIL_ONLY (used by Razorpay webhook)
+    try:
+        response = supabase.table("orders").select("*, products(*)").eq("telegram_id", user.id).eq("status", "COMPLETED").eq("delivery_status", "AWAITING_EMAIL_ONLY").order("created_at", desc=True).limit(1).execute()
+        if response.data:
+            order_data = response.data[0]
+            
+            if not re.match(EMAIL_REGEX, text):
+                await message.reply_text(
+                    f"⚠️ <b>Invalid email!</b> Please type a valid email address (e.g., <code>alex@gmail.com</code>).",
+                    parse_mode="HTML"
+                )
+                return
+            
+            email = text.lower()
+            
+            # Update status first so it doesn't trigger again
+            supabase.table("orders").update({
+                "delivery_status": "DELIVERED"
+            }).eq("id", order_data["id"]).execute()
+            
+            await message.reply_text(f"⏳ <i>Sending credentials to {email}...</i>", parse_mode="HTML")
+            
+            try:
+                credentials = order_data.get("delivered_credentials") or []
+                product_name = order_data["products"]["name"]
+                months = order_data.get("subscription_months", 0)
+                duration_text = f" ({months} Months)" if order_data["products"]["category"] in ("OTT", "VideoEditing", "AI") and months > 0 else ""
+                product_display_name = f"{product_name}{duration_text}"
+                qty = order_data.get("quantity", 1)
+                
+                usernames = "\n".join([c["email_or_username"] for c in credentials])
+                passwords = "\n".join([c["password"] for c in credentials])
+                
+                success = await send_game_credential_email(
+                    to_email=email,
+                    product_name=f"{product_display_name} (x{qty})",
+                    order_id=order_data["id"],
+                    username=usernames,
+                    password=passwords
+                )
+                
+                if success:
+                    supabase.table("orders").update({
+                        "customer_email": email,
+                        "email_sent": True
+                    }).eq("id", order_data["id"]).execute()
+                    
+                    await message.reply_text(
+                        f"✅ <b>Credentials sent to {email} successfully!</b>\n\nCheck your inbox (and spam folder).",
+                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]]),
+                        parse_mode="HTML"
+                    )
+                else:
+                    raise Exception("Email service returned false")
+                    
+            except Exception as e:
+                logger.error(f"Error sending email from AWAITING_EMAIL_ONLY: {e}")
+                await message.reply_text(
+                    f"❌ <b>Error:</b> Could not send email. Please contact support.",
+                    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]]),
+                    parse_mode="HTML"
+                )
+            return
+    except Exception as e:
+        logger.error(f"Error checking AWAITING_EMAIL_ONLY orders: {e}")
 
     # 3. Look for a completed order that needs credential delivery
     try:

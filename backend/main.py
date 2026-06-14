@@ -194,10 +194,16 @@ async def process_digital_delivery(order_id: str, payment_id: str, amount: float
                 
             msg += (
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"<tg-emoji emoji-id=\"5463139369978174548\">⚠️</tg-emoji> <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n"
+                f"<tg-emoji emoji-id=\"5463139369978174548\">⚠️</tg-emoji> <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
+                f"📧 <b>Want credentials on Email?</b>\n"
+                f"<i>Type your email address in this chat right now to receive them via email, or tap Skip!</i>\n"
             )
             
-            keyboard = {"inline_keyboard": [[{"text": "🏠 Main Menu", "callback_data": "main_menu"}]]}
+            keyboard = {"inline_keyboard": [[
+                {"text": "⏭️ Skip — No Email Needed", "callback_data": "skip_email"}
+            ], [
+                {"text": "🏠 Main Menu", "callback_data": "main_menu"}
+            ]]}
             
             # Send message first. If it succeeds, THEN mark as USED!
             success = await send_telegram_message(telegram_id, msg, reply_markup=keyboard)
@@ -205,25 +211,14 @@ async def process_digital_delivery(order_id: str, payment_id: str, amount: float
             if success:
                 for cred in credentials:
                     supabase.table("credentials").update({"status": "USED"}).eq("id", cred["id"]).execute()
-                update_order_completed(order["id"], "DELIVERED")
                 
-                if customer_email:
-                    try:
-                        from backend.services.resend_service import send_credential_email
-                        # Convert to simple list of dicts for email
-                        creds_list = [{"username": c["email_or_username"], "password": c["password"]} for c in credentials]
-                        # Wait, send_credential_email only supports one. Let's loop.
-                        for c in credentials:
-                            await send_credential_email(
-                                to_email=customer_email,
-                                product_name=product_display_name,
-                                order_id=order["id"],
-                                username=c['email_or_username'],
-                                password=c['password']
-                            )
-                        logger.info(f"Auto-delivered emails to {customer_email}")
-                    except Exception as e:
-                        logger.error(f"Failed email auto-delivery to {customer_email}: {e}")
+                import json
+                creds_to_save = [{"email_or_username": c["email_or_username"], "password": c["password"]} for c in credentials]
+                supabase.table("orders").update({
+                    "delivery_status": "AWAITING_EMAIL_ONLY",
+                    "delivered_credentials": creds_to_save
+                }).eq("id", order["id"]).execute()
+                
             else:
                 update_order_completed(order["id"], "MANUAL_PROCESSING")
                 logger.error(f"Telegram delivery failed for Razorpay order {order['id']}. Kept UNUSED.")

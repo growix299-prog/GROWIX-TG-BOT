@@ -122,7 +122,51 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await message.reply_text("✅ <b>Thank you!</b>\nYour review has been submitted successfully.", parse_mode="HTML")
         return
 
-    # 2. Look for a completed order for this user that needs manual activation (OTT)
+    # 2. Check if user wants to send credentials to email (optional email step)
+    if context.user_data.get('awaiting_optional_email'):
+        order_data = context.user_data['awaiting_optional_email']
+        product = order_data["product"]
+        credentials = order_data["credentials"]
+        product_display_name = order_data["product_display_name"]
+        qty = len(credentials)
+        
+        if not re.match(EMAIL_REGEX, text):
+            await message.reply_text(
+                f"⚠️ <b>Invalid email!</b> Please type a valid email address (e.g., <code>alex@gmail.com</code>).",
+                parse_mode="HTML"
+            )
+            return
+        
+        email = text.lower()
+        context.user_data.pop('awaiting_optional_email', None)
+        
+        await message.reply_text(f"⏳ <i>Sending credentials to {email}...</i>", parse_mode="HTML")
+        
+        try:
+            usernames = "\n".join([c["email_or_username"] for c in credentials])
+            passwords = "\n".join([c["password"] for c in credentials])
+            await send_game_credential_email(
+                to_email=email,
+                product_name=f"{product_display_name} (x{qty})",
+                order_id=order_data["order_id"],
+                username=usernames,
+                password=passwords
+            )
+            await message.reply_text(
+                f"✅ <b>Credentials sent to {email} successfully!</b>\n\nCheck your inbox (and spam folder).",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]]),
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            logger.error(f"Error sending email: {e}")
+            await message.reply_text(
+                f"❌ Failed to send email. Please contact support.",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]]),
+                parse_mode="HTML"
+            )
+        return
+
+    # 3. Look for a completed order that needs credential delivery
     try:
         response = supabase.table("orders").select("*, products(*)").eq("telegram_id", user.id).eq("status", "COMPLETED").in_("delivery_status", ["MANUAL_PROCESSING", "AWAITING_EMAIL_GAMES"]).order("created_at", desc=True).execute()
         pending_orders = response.data
@@ -138,106 +182,84 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 break
 
     if active_order:
-        # The user is prompted to submit their email
-            product = active_order["products"]
+        product = active_order["products"]
+        qty = active_order.get("quantity", 1)
+
+        if active_order["delivery_status"].startswith("AWAITING_EMAIL_GAMES"):
+            # Fetch credentials immediately — NO email required
+            await message.reply_text(f"⏳ <i>Fetching {qty} {product['category'].lower()} credentials, please wait...</i>", parse_mode="HTML")
             
-            # Simple regex validation for email
-            if not re.match(EMAIL_REGEX, text):
+            q = supabase.table("credentials").select("*").eq("product_id", product["id"]).eq("status", "UNUSED")
+            if product["category"] == "OTT" and active_order.get("subscription_months", 0) > 0:
+                q = q.eq("subscription_months", active_order.get("subscription_months"))
+            credentials_response = q.limit(qty).execute()
+            
+            credentials = credentials_response.data or []
+            
+            if len(credentials) == qty:
+                for cred in credentials:
+                    mark_credential_used(cred["id"])
+                    
+                update_order_completed(active_order["id"], "DELIVERED")
+                
+                months = active_order.get("subscription_months", 0)
+                duration_text = f" ({months} Months)" if product["category"] == "OTT" and months > 0 else ""
+                product_display_name = f"{product['name']}{duration_text}"
+                
+                # Send credentials via Telegram FIRST
+                msg = (
+                    f"<b>PAYMENT SUCCESSFUL</b> <tg-emoji emoji-id=\"6093648802986592017\">✅</tg-emoji>\n"
+                    f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
+                    f"✨ Your {qty} login credentials for <b>{product_display_name}</b> are ready! <tg-emoji emoji-id=\"5343553259971822765\">🚀</tg-emoji>\n\n"
+                )
+                
+                for idx, credential in enumerate(credentials, 1):
+                    msg += f"<b>ACCOUNT {idx}</b> <tg-emoji emoji-id=\"5427009714745517609\">🔑</tg-emoji>\n"
+                    msg += f"👤 <b>Username:</b> <code>{credential['email_or_username']}</code>\n"
+                    msg += f"🔒 <b>Password:</b> <code>{credential['password']}</code>\n\n"
+                    
+                msg += (
+                    f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+                    f"<tg-emoji emoji-id=\"5463139369978174548\">⚠️</tg-emoji> <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
+                    f"<tg-emoji emoji-id=\"5206607081334906820\">✅</tg-emoji> <b>Thank you {html.escape(user.first_name)} for shopping with us!</b>\n"
+                )
+                
+                await message.reply_text(text=msg, parse_mode="HTML")
+                
+                # Now ask if user wants credentials on email
+                context.user_data['awaiting_optional_email'] = {
+                    "product": product,
+                    "credentials": credentials,
+                    "product_display_name": product_display_name,
+                    "order_id": active_order["id"]
+                }
+                
+                email_ask_msg = (
+                    f"📧 <b>Want credentials on Email?</b>\n\n"
+                    f"Your credentials are delivered above. If you also want them sent to your email, type your email address below.\n\n"
+                    f"Or tap <b>Skip</b> to continue without email."
+                )
+                keyboard = [
+                    [InlineKeyboardButton("✍️ Write a Review", callback_data="write_review")],
+                    [InlineKeyboardButton("⏭️ Skip — No Email Needed", callback_data="skip_email")],
+                    [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
+                ]
                 await message.reply_text(
-                    f"⚠️ <b>Action Required: Pending Delivery</b>\n\n"
-                    f"You have a pending order for <b>{product['name']}</b>!\n"
-                    f"Before you can continue, please type your email address (e.g., <code>alex@gmail.com</code>) below so we can deliver your credentials securely.",
+                    text=email_ask_msg,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
                     parse_mode="HTML"
                 )
-                return
-
-            # Email is valid! Create the OTT activation request
-            email = text.lower()
-            
-            qty = active_order.get("quantity", 1)
-
-            if active_order["delivery_status"].startswith("AWAITING_EMAIL_GAMES"):
-                # Fetch credentials immediately
-                await message.reply_text(f"⏳ <i>Fetching {qty} {product['category'].lower()} credentials, please wait...</i>", parse_mode="HTML")
-                
-                # Fetch multiple unused credentials
-                q = supabase.table("credentials").select("*").eq("product_id", product["id"]).eq("status", "UNUSED")
-                if product["category"] == "OTT" and active_order.get("subscription_months", 0) > 0:
-                    q = q.eq("subscription_months", active_order.get("subscription_months"))
-                credentials_response = q.limit(qty).execute()
-                
-                credentials = credentials_response.data or []
-                
-                if len(credentials) == qty:
-                    # Mark all as used
-                    for cred in credentials:
-                        mark_credential_used(cred["id"])
-                        
-                    update_order_completed(active_order["id"], "DELIVERED")
-                    
-                    months = active_order.get("subscription_months", 0)
-                    duration_text = f" ({months} Months)" if product["category"] == "OTT" and months > 0 else ""
-                    product_display_name = f"{product['name']}{duration_text}"
-                    
-                    # Send credentials via Telegram
-                    msg = (
-                        f"<b>PAYMENT SUCCESSFUL</b> <tg-emoji emoji-id=\"6093648802986592017\">✅</tg-emoji>\n"
-                        f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n\n"
-                        f"✨ Your {qty} login credentials for <b>{product_display_name}</b> are ready! <tg-emoji emoji-id=\"5343553259971822765\">🚀</tg-emoji>\n\n"
-                    )
-                    
-                    for idx, credential in enumerate(credentials, 1):
-                        msg += f"<b>ACCOUNT {idx}</b> <tg-emoji emoji-id=\"5427009714745517609\">🔑</tg-emoji>\n"
-                        msg += f"👤 <b>Username:</b> <code>{credential['email_or_username']}</code>\n"
-                        msg += f"🔒 <b>Password:</b> <code>{credential['password']}</code>\n\n"
-                        
-                    msg += (
-                        f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                        f"<tg-emoji emoji-id=\"5465665476971471368\">📧</tg-emoji> <i>We have also sent your login credentials to your email <b>{email}</b>.</i>\n\n"
-                        f"<tg-emoji emoji-id=\"5463139369978174548\">⚠️</tg-emoji> <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
-                        f"<tg-emoji emoji-id=\"5206607081334906820\">✅</tg-emoji> <b>Thank you {html.escape(user.first_name)} for shopping with us!</b>\n"
-                        f"We'd love to hear your feedback. Please write a review for us!"
-                    )
-                    
-                    # Send credentials via email (send 1 email with all credentials)
-                    try:
-                        # Assuming send_game_credential_email can handle multiple, or we just format the usernames
-                        usernames = "\n".join([c["email_or_username"] for c in credentials])
-                        passwords = "\n".join([c["password"] for c in credentials])
-                        await send_game_credential_email(
-                            to_email=email,
-                            product_name=f"{product_display_name} (x{qty})",
-                            order_id=active_order["id"],
-                            username=usernames,
-                            password=passwords
-                        )
-                    except Exception as e:
-                        logger.error(f"Error sending multi-credential email: {e}")
-                    
-                    keyboard = [
-                        [InlineKeyboardButton("✍️ Write a Review", callback_data="write_review", style="primary")],
-                        [InlineKeyboardButton("💬 Ask for Refund", url="https://t.me/ur_Growixx222")],
-                        [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")],
-                        [InlineKeyboardButton("🛍️ Buy More", callback_data="main_menu", style="primary")],
-                        [InlineKeyboardButton("📜 Order History", callback_data="view_history")]
-                    ]
-                    await message.reply_text(
-                        text=msg,
-                        reply_markup=InlineKeyboardMarkup(keyboard),
-                        parse_mode="HTML"
-                    )
-                    logger.info(f"{qty} Credentials delivered to telegram_id {user.id} and email {email}")
-                else:
-                    # Out of stock or partial stock
-                    update_order_completed(active_order["id"], "MANUAL_PROCESSING")
-                    msg = (
-                        f"⚠️ <b>Thank you for your email!</b> ⚠️\n\n"
-                        f"Unfortunately, we only have {len(credentials)} out of {qty} accounts available for <b>{product['name']}</b> right now.\n\n"
-                        f"Our admin team has been notified and will manually generate and send the remaining credentials shortly via this chat and to your email: {email}."
-                    )
-                    await message.reply_text(msg, parse_mode="HTML")
-                    logger.warning(f"Not enough credentials available for product: {product['name']}. Wanted {qty}, found {len(credentials)}.")
-                return
+                logger.info(f"{qty} Credentials delivered to telegram_id {user.id} in chat. Email pending optional.")
+            else:
+                update_order_completed(active_order["id"], "MANUAL_PROCESSING")
+                msg = (
+                    f"⚠️ <b>Partial Stock Available!</b> ⚠️\n\n"
+                    f"Unfortunately, we only have {len(credentials)} out of {qty} accounts available for <b>{product['name']}</b> right now.\n\n"
+                    f"Our admin team has been notified and will deliver the remaining credentials shortly via this chat."
+                )
+                await message.reply_text(msg, parse_mode="HTML")
+                logger.warning(f"Not enough credentials for {product['name']}. Wanted {qty}, found {len(credentials)}.")
+            return
 
     # Handle clearing conversational states if user clicks a main menu button
     if any(keyword in text for keyword in ["Products", "Purchase History", "Support", "Wallet"]):
@@ -282,13 +304,13 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         anim_emoji = get_product_animated_emoji(product['name'])
         
         checkout_text = (
-            f"🛒 <b>CHECKOUT SUMMARY</b>\n"
+            f"<tg-emoji emoji-id=\"5897824076977671910\">🛒</tg-emoji> <b>CHECKOUT SUMMARY</b>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"📦 <b>Product:</b> {anim_emoji} {product_name_display}\n"
-            f"🔢 <b>Quantity:</b> {qty}\n"
-            f"💰 <b>Total Price:</b> ₹{total_price:.2f}\n"
+            f"<tg-emoji emoji-id=\"5458603043203327669\">🔔</tg-emoji> <b>PRODUCT:</b> {anim_emoji} {product_name_display}\n\n"
+            f"<tg-emoji emoji-id=\"5289722755871162900\">🔢</tg-emoji> <b>QUANTITY:</b> {qty}\n\n"
+            f"<tg-emoji emoji-id=\"5990147899403539264\">💰</tg-emoji> <b>TOTAL PRICE:</b> ₹{total_price:.2f}\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"Please select your preferred payment method below:"
+            f"<b>PLEASE SELECT YOUR PREFERRED PAYMENT METHOD BELOW:</b> <tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
         )
         
         keyboard = [
@@ -372,16 +394,17 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard.append([InlineKeyboardButton("❌ Cancel", callback_data="main_menu")])
             
             details = (
-                f"<b>PRODUCT DETAIL</b> 📦\n"
+                f"<tg-emoji emoji-id=\"5197304993920616826\">📦</tg-emoji> <b>PRODUCT DETAILS</b> <tg-emoji emoji-id=\"5197304993920616826\">📦</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"🏷️ <b>Name:</b> {anim_emoji} <b>{selected_product['name']}</b>\n"
-                f"🗂️ <b>Category:</b> <b>{selected_product['category']}</b>\n"
-                f"💰 <b>1 Month:</b> ₹{float(selected_product.get('price_1m') or 0):.2f}\n"
-                f"💰 <b>3 Months:</b> ₹{float(selected_product.get('price_3m') or 0):.2f}\n"
-                f"💰 <b>6 Months:</b> ₹{float(selected_product.get('price_6m') or 0):.2f}\n"
-                f"⚡ <b>Delivery:</b> ✨ INSTANT AUTO-DELIVERY ✨\n\n"
+                f"<tg-emoji emoji-id=\"5458603043203327669\">🔔</tg-emoji> <b>Name:</b> {anim_emoji} <b>{selected_product['name']}</b>\n\n"
+                f"<tg-emoji emoji-id=\"5217822164362739968\">🗂️</tg-emoji> <b>Category:</b> <b>{selected_product['category']}</b>\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>1 Month:</b> ₹{float(selected_product.get('price_1m') or 0):.2f}\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>3 Months:</b> ₹{float(selected_product.get('price_3m') or 0):.2f}\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>6 Months:</b> ₹{float(selected_product.get('price_6m') or 0):.2f}\n\n"
+                f"<b>INSTANT AUTO-DELIVERY</b> <tg-emoji emoji-id=\"5456140674028019486\">⚡</tg-emoji><tg-emoji emoji-id=\"5456140674028019486\">⚡</tg-emoji>\n"
+                f"<b>INSTANT WALLET DEPOSIT</b> <tg-emoji emoji-id=\"5417924076503062111\">💳</tg-emoji><tg-emoji emoji-id=\"5417924076503062111\">💳</tg-emoji>\n\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"🛒 <i>Please select your desired duration below:</i>\n"
+                f"<b>PLEASE SELECT YOUR DESIRED DURATION BELOW:</b>\n"
                 f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
             )
             
@@ -402,12 +425,16 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['awaiting_quantity_duration'] = 0
         context.user_data.pop('awaiting_product_selection', None)
         
+        from telegram_bot.handlers.menu import get_product_animated_emoji
+        anim_emoji = get_product_animated_emoji(selected_product['name'])
+        
         keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="main_menu")]]
         
         await message.reply_text(
-            f"✅ <b>{selected_product['name']}</b> is in stock!\n\n"
-            f"📦 <b>Available Accounts:</b> {stock_count}\n\n"
-            f"<tg-emoji emoji-id=\"5344036847871865919\">⌨️</tg-emoji> <b>How many accounts do you want to buy?</b>\n"
+            f"✅ {anim_emoji} <b>{selected_product['name']} IN STOCK</b>\n\n"
+            f"<tg-emoji emoji-id=\"6255600234328491647\">📦</tg-emoji> <b>AVAILABLE ACCOUNTS:</b> {stock_count}\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"<tg-emoji emoji-id=\"5344036847871865919\">⌨️</tg-emoji> <b>HOW MANY ACCOUNTS DO YOU WANT TO BUY</b>\n"
             f"<i>(Type a number, e.g., 1 or 2)</i>",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode="HTML"

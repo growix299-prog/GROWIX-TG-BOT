@@ -162,17 +162,17 @@ async def process_digital_delivery(order_id: str, payment_id: str, amount: float
         pass
 
     if category in ("Games", "OTT"):
-        # Ask for email before Automated Credential Dispatch
+        # Ask for any message before Automated Credential Dispatch
         update_order_completed(order["id"], "AWAITING_EMAIL_GAMES")
         msg = (
             f"🎉 <b>PAYMENT SUCCESSFUL!</b> 🎉\n\n"
             f"Thank you for purchasing <b>{product_name}</b>!\n\n"
             f"━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📧 <b>NEXT STEP — SEND YOUR EMAIL</b>\n"
+            f"🔑 <b>NEXT STEP — GET YOUR CREDENTIALS</b>\n"
             f"━━━━━━━━━━━━━━━━━━━━━\n\n"
             f"To receive your {category.lower()} credentials securely, "
-            f"please <b>type and send your email address</b> in this chat right now.\n\n"
-            f"Your login ID and password will be delivered here instantly and also sent to your email! 🚀"
+            f"please type <b>anything</b> (e.g., <code>hi</code>) in this chat right now.\n\n"
+            f"Your login ID and password will be delivered here instantly! 🚀"
         )
         await send_telegram_message(telegram_id, msg)
         logger.info(f"{category} order set to AWAITING_EMAIL_GAMES, awaiting email from telegram_id {telegram_id}")

@@ -169,7 +169,7 @@ export default function CredentialsPage() {
 
   const handleSingleSubmit = async (e: React.FormEvent) => {
     const selectedProduct = products.find(p => p.id === productId);
-    const isOtt = selectedProduct?.category === 'OTT';
+    const hasDuration = selectedProduct?.category === 'OTT' || selectedProduct?.category === 'VideoEditing';
     e.preventDefault()
     setMessage(null)
 
@@ -186,7 +186,7 @@ export default function CredentialsPage() {
           email_or_username: emailOrUsername.trim(),
           password: password.trim(),
           status: 'UNUSED',
-          subscription_months: isOtt ? parseInt(subscriptionMonths) || 1 : 0
+          subscription_months: hasDuration ? parseInt(subscriptionMonths) || 1 : 0
         }])
 
       if (error) throw error
@@ -203,7 +203,7 @@ export default function CredentialsPage() {
   const handleBulkSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const selectedProduct = products.find(p => p.id === productId);
-    const isOtt = selectedProduct?.category === 'OTT';
+    const hasDuration = selectedProduct?.category === 'OTT' || selectedProduct?.category === 'VideoEditing';
     setMessage(null)
 
     if (!productId || !bulkText.trim()) {
@@ -222,7 +222,7 @@ export default function CredentialsPage() {
       const parts = cleanLine.split(bulkSeparator)
       if (parts.length >= 2) {
         let pass = parts.slice(1).join(bulkSeparator).trim();
-        let months = isOtt ? parseInt(bulkSubscriptionMonths) || 1 : 0;
+        let months = hasDuration ? parseInt(bulkSubscriptionMonths) || 1 : 0;
 
         insertPayload.push({
           product_id: productId,
@@ -360,7 +360,7 @@ export default function CredentialsPage() {
                     className="w-full px-4 py-2.5 bg-cyber-bg border border-cyber-border rounded-lg text-cyber-text placeholder-gray-600 focus:outline-none focus:border-yellow-400"
                   />
                 </div>
-                {products.find(p => p.id === productId)?.category === 'OTT' && (
+                {(products.find(p => p.id === productId)?.category === 'OTT' || products.find(p => p.id === productId)?.category === 'VideoEditing') && (
                   <div>
                     <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Subscription Duration (Months)</label>
                     <div className="flex gap-2 mb-2">
@@ -407,7 +407,7 @@ export default function CredentialsPage() {
                   </div>
                 </div>
 
-                {products.find(p => p.id === productId)?.category === 'OTT' && (
+                {(products.find(p => p.id === productId)?.category === 'OTT' || products.find(p => p.id === productId)?.category === 'VideoEditing') && (
                   <div>
                     <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Apply Subscription Duration to all (Months)</label>
                     <div className="flex gap-2 mb-2">
@@ -452,6 +452,33 @@ export default function CredentialsPage() {
 
         {/* RIGHT COLUMN: Inventory Audit */}
         <div className="glass-panel p-6 rounded-xl border border-cyber-border/80 lg:col-span-2 space-y-4">
+          {/* Stock Summary Cards */}
+          <h2 className={`${headingStyle} text-lg`}>Stock Summary</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+            {(() => {
+              const stockMap: Record<string, {total: number, used: number, unused: number, productName: string}> = {}
+              credentials.forEach((cred: any) => {
+                const name = cred.products?.name || 'Unknown'
+                if (!stockMap[name]) stockMap[name] = {total: 0, used: 0, unused: 0, productName: name}
+                stockMap[name].total++
+                if (cred.status === 'USED') stockMap[name].used++
+                else stockMap[name].unused++
+              })
+              const entries = Object.values(stockMap).sort((a, b) => b.total - a.total)
+              if (entries.length === 0) return <div className="col-span-full text-gray-600 text-xs text-center py-4">No accounts in stock</div>
+              return entries.map((entry) => (
+                <div key={entry.productName} className="p-3 bg-cyber-bg border border-cyber-border/50 rounded-lg">
+                  <p className="text-white font-bold text-xs truncate mb-1">{entry.productName}</p>
+                  <p className="text-lg font-black text-yellow-400">{entry.total} <span className="text-[10px] text-gray-500 font-normal">accounts</span></p>
+                  <div className="flex gap-2 mt-1">
+                    <span className="text-[10px] text-emerald-400 font-bold">{entry.unused} unused</span>
+                    <span className="text-[10px] text-gray-500 font-bold">{entry.used} used</span>
+                  </div>
+                </div>
+              ))
+            })()}
+          </div>
+
           <h2 className={`${headingStyle} text-lg`}>Accounts Stock Inventory Log</h2>
           
           <div className="overflow-x-auto max-h-[480px]">
@@ -461,7 +488,7 @@ export default function CredentialsPage() {
                   <th className="py-3 px-4 uppercase tracking-wider font-bold">Product Item</th>
                   <th className="py-3 px-4 uppercase tracking-wider font-bold">Account / Email</th>
                   <th className="py-3 px-4 uppercase tracking-wider font-bold">Account Password</th>
-                  <th className="py-3 px-4 uppercase tracking-wider font-bold text-center">Timer / Validity</th>
+                  <th className="py-3 px-4 uppercase tracking-wider font-bold text-center">Duration</th>
                   <th className="py-3 px-4 uppercase tracking-wider font-bold text-center">Status</th>
                   <th className="py-3 px-4 uppercase tracking-wider font-bold text-center">Actions</th>
                 </tr>
@@ -469,67 +496,73 @@ export default function CredentialsPage() {
               <tbody className="font-sfpro divide-y divide-cyber-border/30">
                 {credentials.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-gray-500 uppercase tracking-widest text-[10px]">No accounts in Stock</td>
+                    <td colSpan={6} className="py-12 text-center text-gray-500 uppercase tracking-widest text-[10px]">No accounts in Stock</td>
                   </tr>
                 ) : (
-                  credentials.map((cred) => (
-                    <tr key={cred.id} className="hover:bg-cyber-card/3 group transition-all">
-                      <td className="py-3 px-4 font-bold text-white">{cred.products?.name}</td>
-                      <td className="py-3 px-4 font-mono text-gray-400">{cred.email_or_username}</td>
-                      <td className="py-3 px-4 font-mono text-gray-500 group-hover:text-cyber-text transition-all select-all">
-                        <code>{cred.password}</code>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {cred.products?.category === 'OTT' && cred.subscription_months ? (() => {
-                          const created = new Date(cred.created_at);
-                          const expires = new Date(created);
-                          expires.setMonth(expires.getMonth() + cred.subscription_months);
-                          
-                          const diffTime = Math.abs(currentTime.getTime() - created.getTime());
-                          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                          
-                          const leftTime = expires.getTime() - currentTime.getTime();
-                          const leftDays = Math.ceil(leftTime / (1000 * 60 * 60 * 24));
-                          
-                          const isExpired = leftDays <= 0;
-                          
-                          return (
-                            <div className="flex flex-col gap-1 items-center">
-                              <span className="text-[10px] text-gray-500 font-medium">Fed {diffDays === 0 ? 'Today' : `${diffDays} days ago`}</span>
-                              <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${isExpired ? 'bg-red-950/80 text-red-500' : 'bg-emerald-950/30 text-emerald-400'}`}>
-                                {isExpired ? 'EXPIRED' : `${leftDays} days left`}
+                  // Group credentials by product name, then flatten
+                  (() => {
+                    const grouped: Record<string, any[]> = {}
+                    credentials.forEach((cred: any) => {
+                      const name = cred.products?.name || 'Unknown'
+                      if (!grouped[name]) grouped[name] = []
+                      grouped[name].push(cred)
+                    })
+                    const rows: JSX.Element[] = []
+                    Object.entries(grouped).forEach(([productName, creds]) => {
+                      // Product group header
+                      const unused = creds.filter(c => c.status === 'UNUSED').length
+                      const used = creds.filter(c => c.status === 'USED').length
+                      rows.push(
+                        <tr key={`header-${productName}`} className="bg-yellow-950/20 border-t-2 border-yellow-500/30">
+                          <td colSpan={6} className="py-2 px-4 text-yellow-400 font-bold text-xs uppercase tracking-wider">
+                            {productName} — <span className="text-emerald-400">{unused} unused</span> / <span className="text-gray-400">{used} used</span> / <span className="text-white">{creds.length} total</span>
+                          </td>
+                        </tr>
+                      )
+                      creds.forEach((cred) => {
+                        rows.push(
+                          <tr key={cred.id} className="hover:bg-cyber-card/3 group transition-all">
+                            <td className="py-3 px-4 font-bold text-white">{cred.products?.name}</td>
+                            <td className="py-3 px-4 font-mono text-gray-400">{cred.email_or_username}</td>
+                            <td className="py-3 px-4 font-mono text-gray-500 group-hover:text-cyber-text transition-all select-all">
+                              <code>{cred.password}</code>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              {cred.subscription_months ? (
+                                <span className="text-[11px] font-bold text-cyan-400">{cred.subscription_months}M</span>
+                              ) : <span className="text-gray-600">-</span>}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
+                                cred.status === 'UNUSED' 
+                                  ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-500/20' 
+                                  : 'bg-gray-900/80 text-gray-500 border border-cyber-border'
+                              }`}>
+                                {cred.status}
                               </span>
-                            </div>
-                          );
-                        })() : <span className="text-gray-600">-</span>}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
-                          cred.status === 'UNUSED' 
-                            ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-500/20' 
-                            : 'bg-gray-900/80 text-gray-500 border border-cyber-border'
-                        }`}>
-                          {cred.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => openEditCredModal(cred)}
-                            className="p-1 bg-cyber-bg hover:bg-yellow-950/30 text-gray-400 hover:text-yellow-400 border border-cyber-border rounded transition-all"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => startSoftDeleteCred(cred)}
-                            className="p-1 bg-cyber-bg hover:bg-red-950/30 text-gray-400 hover:text-red-400 border border-cyber-border rounded transition-all"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                <button
+                                  onClick={() => openEditCredModal(cred)}
+                                  className="p-1 bg-cyber-bg hover:bg-yellow-950/30 text-gray-400 hover:text-yellow-400 border border-cyber-border rounded transition-all"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => startSoftDeleteCred(cred)}
+                                  className="p-1 bg-cyber-bg hover:bg-red-950/30 text-gray-400 hover:text-red-400 border border-cyber-border rounded transition-all"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    })
+                    return rows
+                  })()
                 )}
               </tbody>
             </table>

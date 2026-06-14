@@ -343,6 +343,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         # Clear any pending conversational states
         context.user_data.pop('awaiting_product_selection', None)
         context.user_data.pop('awaiting_quantity_for_product', None)
+        context.user_data.pop('awaiting_optional_email', None)
         
         banner = (
             f"<b>HI</b> 🫲<tg-emoji emoji-id=\"5456258317477230911\">😎</tg-emoji>🫱 <b>{html.escape(user.first_name)}</b>\n"
@@ -496,27 +497,28 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         anim_emoji = get_product_animated_emoji(product['name'])
 
         details = (
-            f"<b>PRODUCT DETAIL</b> 📦\n"
+            f"<tg-emoji emoji-id=\"5197304993920616826\">📦</tg-emoji> <b>PRODUCT DETAILS</b> <tg-emoji emoji-id=\"5197304993920616826\">📦</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-            f"🏷️ <b>Name:</b> {anim_emoji} <b>{product['name']}</b>\n"
-            f"🗂️ <b>Category:</b> <b>{product['category']}</b>\n"
+            f"<tg-emoji emoji-id=\"5458603043203327669\">🔔</tg-emoji> <b>Name:</b> {anim_emoji} <b>{product['name']}</b>\n\n"
+            f"<tg-emoji emoji-id=\"5217822164362739968\">🗂️</tg-emoji> <b>Category:</b> <b>{product['category']}</b>\n"
         )
         if product['category'] == 'OTT':
             details += (
-                f"💰 <b>1 Month:</b> ₹{float(product.get('price_1m') or 0):.2f}\n"
-                f"💰 <b>3 Months:</b> ₹{float(product.get('price_3m') or 0):.2f}\n"
-                f"💰 <b>6 Months:</b> ₹{float(product.get('price_6m') or 0):.2f}\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>1 Month:</b> ₹{float(product.get('price_1m') or 0):.2f}\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>3 Months:</b> ₹{float(product.get('price_3m') or 0):.2f}\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>6 Months:</b> ₹{float(product.get('price_6m') or 0):.2f}\n"
             )
         else:
-            details += f"💰 <b>Price:</b> ₹{float(product['price']):.2f}\n"
+            details += f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>Price:</b> ₹{float(product['price']):.2f}\n"
         
         details += (
-            f"⚡ <b>Delivery:</b> ✨ INSTANT AUTO-DELIVERY ✨\n"
-            f"📊 <b>Stock Status:</b> {stock_label}\n\n"
+            f"\n<b>INSTANT AUTO-DELIVERY</b> <tg-emoji emoji-id=\"5456140674028019486\">⚡</tg-emoji><tg-emoji emoji-id=\"5456140674028019486\">⚡</tg-emoji>\n"
+            f"<b>INSTANT WALLET DEPOSIT</b> <tg-emoji emoji-id=\"5417924076503062111\">💳</tg-emoji><tg-emoji emoji-id=\"5417924076503062111\">💳</tg-emoji>\n\n"
+            f"<tg-emoji emoji-id=\"6255600234328491647\">📊</tg-emoji> <b>Available Accounts:</b> {stock_label}\n"
         )
 
         details += f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-        details += f"🛒 <i>Ready to purchase? Please select an option below:</i>\n"
+        details += f"<b>PLEASE SELECT YOUR DESIRED DURATION BELOW:</b>\n"
         details += f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
         
         keyboard = []
@@ -566,17 +568,17 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_text("<blockquote>❌ Product not found.</blockquote>", parse_mode="HTML")
             return
 
-        has_stock = False
+        stock_count = 0
         try:
             q = supabase.table("credentials").select("id").eq("product_id", product_id).eq("status", "UNUSED")
             if product["category"] == "OTT" and months > 0:
                 q = q.eq("subscription_months", months)
-            stock_check = q.limit(1).execute()
-            has_stock = bool(stock_check.data)
+            stock_check = q.execute()
+            stock_count = len(stock_check.data) if stock_check.data else 0
         except Exception as e:
-            has_stock = False
+            stock_count = 0
 
-        if not has_stock:
+        if stock_count == 0:
             duration_text = f" ({months} Months)" if product["category"] == "OTT" and months > 0 else ""
             await query.edit_message_text(
                 text=(
@@ -601,10 +603,12 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         
         duration_text = f" ({months} Months)" if product["category"] == "OTT" and months > 0 else ""
         
+        anim_emoji = get_product_animated_emoji(product['name'])
         await query.edit_message_text(
-            f"✅ <b>{product['name']}{duration_text}</b> is in stock!\n\n"
-            f"📦 <b>Available Accounts:</b> {len(stock_check.data) if stock_check.data else 0}\n\n"
-            f"<tg-emoji emoji-id=\"5344036847871865919\">⌨️</tg-emoji> <b>How many accounts do you want to buy?</b>\n"
+            f"✅ {anim_emoji} <b>{product['name']}{duration_text} IN STOCK</b>\n\n"
+            f"<tg-emoji emoji-id=\"6255600234328491647\">📦</tg-emoji> <b>AVAILABLE ACCOUNTS:</b> {stock_count}\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"<tg-emoji emoji-id=\"5344036847871865919\">⌨️</tg-emoji> <b>HOW MANY ACCOUNTS DO YOU WANT TO BUY</b>\n"
             f"<i>(Type a number, e.g., 1 or 2)</i>",
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode="HTML"
@@ -615,15 +619,11 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         return
 
     elif data.startswith("walletpay_"):
+        # Format: walletpay_<product_id>_<months>_<qty>
         parts = data.split("_")
         product_id = parts[1]
-        
-        if len(parts) > 3:
-            months = int(parts[2])
-            qty = int(parts[3])
-        else:
-            months = 0
-            qty = int(parts[2]) if len(parts) > 2 else 1
+        months = int(parts[2]) if len(parts) > 2 else 0
+        qty = int(parts[3]) if len(parts) > 3 else 1
         
         try:
             response = supabase.table("products").select("*").eq("id", product_id).execute()
@@ -682,11 +682,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             f"💰 <b>Amount Paid:</b> ₹{price:.2f} (from Wallet)\n"
             f"👛 <b>Remaining Balance:</b> ₹{get_wallet_balance(user.id):.2f}\n\n"
             f"━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📧 <b>NEXT STEP — SEND YOUR EMAIL</b>\n"
+            f"🔑 <b>NEXT STEP — GET YOUR CREDENTIALS</b>\n"
             f"━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"To receive your {qty} credentials securely, "
-            f"please <b>type and send your email address</b> in this chat right now.\n\n"
-            f"Your login details will be delivered here instantly and also sent to your email! 🚀"
+            f"Type <b>anything</b> (e.g., <code>hi</code>) in this chat to receive your credentials instantly! 🚀"
         )
         await query.edit_message_text(text=msg, parse_mode="HTML")
         return
@@ -834,15 +832,11 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         return
 
     elif data.startswith("rzpterms_"):
+        # Format: rzpterms_<product_id>_<months>_<qty>
         parts = data.split("_")
         product_id = parts[1]
-        
-        if len(parts) > 3:
-            months = int(parts[2])
-            qty = int(parts[3])
-        else:
-            months = 0
-            qty = int(parts[2]) if len(parts) > 2 else 1
+        months = int(parts[2]) if len(parts) > 2 else 0
+        qty = int(parts[3]) if len(parts) > 3 else 1
             
         terms_text = (
             f"⚠️ <b>RAZORPAY TERMS & CONDITIONS</b> ⚠️\n\n"
@@ -859,15 +853,11 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         await query.edit_message_text(text=terms_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
 
     elif data.startswith("rzpagree_"):
+        # Format: rzpagree_<product_id>_<months>_<qty>
         parts = data.split("_")
         product_id = parts[1]
-        
-        if len(parts) > 3:
-            months = int(parts[2])
-            qty = int(parts[3])
-        else:
-            months = 0
-            qty = int(parts[2]) if len(parts) > 2 else 1
+        months = int(parts[2]) if len(parts) > 2 else 0
+        qty = int(parts[3]) if len(parts) > 3 else 1
         
         loading_text = (
             f"<b>ORDER INITIATED</b> <tg-emoji emoji-id=\"6230853345733510932\">💰</tg-emoji>\n"
@@ -1007,6 +997,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         )
 
     elif data == "write_review":
+        context.user_data.pop('awaiting_optional_email', None)
         context.user_data['awaiting_review'] = True
         review_text = (
             f"<blockquote>"
@@ -1016,5 +1007,17 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         )
         await query.edit_message_text(
             text=review_text,
+            parse_mode="HTML"
+        )
+
+    elif data == "skip_email":
+        context.user_data.pop('awaiting_optional_email', None)
+        await query.edit_message_text(
+            text="✅ <b>No problem!</b> Your credentials are in the chat above. Enjoy your purchase! 🎉",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("✍️ Write a Review", callback_data="write_review")],
+                [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")],
+                [InlineKeyboardButton("🛍️ Buy More", callback_data="view_products")]
+            ]),
             parse_mode="HTML"
         )

@@ -174,7 +174,7 @@ async def process_digital_delivery(order_id: str, payment_id: str, amount: float
         
         months = order.get("subscription_months", 0)
         duration_text = f" ({months} Months)" if category in ("OTT", "VideoEditing", "AI") and months > 0 else ""
-        product_display_name = f"{product_name}{duration_text}"
+        product_display_name = f"{html.escape(product_name)}{duration_text}"
         
         if len(credentials) == qty:
             for cred in credentials:
@@ -190,8 +190,8 @@ async def process_digital_delivery(order_id: str, payment_id: str, amount: float
             )
             for idx, credential in enumerate(credentials, 1):
                 msg += f"<b>ACCOUNT {idx}</b> <tg-emoji emoji-id=\"5427009714745517609\">🔑</tg-emoji>\n"
-                msg += f"👤 <b>Username:</b> <code>{credential['email_or_username']}</code>\n"
-                msg += f"🔒 <b>Password:</b> <code>{credential['password']}</code>\n\n"
+                msg += f"👤 <b>Username:</b> <code>{html.escape(credential['email_or_username'])}</code>\n"
+                msg += f"🔒 <b>Password:</b> <code>{html.escape(credential['password'])}</code>\n\n"
                 
             msg += (
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"

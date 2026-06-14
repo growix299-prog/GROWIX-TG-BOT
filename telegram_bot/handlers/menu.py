@@ -695,7 +695,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             
             update_order_completed(order_data["id"], "DELIVERED")
             duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing", "AI") and months > 0 else ""
-            product_display_name = f"{product['name']}{duration_text}"
+            product_display_name = f"{html.escape(product['name'])}{duration_text}"
             
             msg = (
                 f"🎉 <b>WALLET PAYMENT SUCCESSFUL!</b> 🎉\n\n"
@@ -707,8 +707,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             )
             for idx, credential in enumerate(credentials, 1):
                 msg += f"<b>ACCOUNT {idx}</b> <tg-emoji emoji-id=\"5427009714745517609\">🔑</tg-emoji>\n"
-                msg += f"👤 <b>Username:</b> <code>{credential['email_or_username']}</code>\n"
-                msg += f"🔒 <b>Password:</b> <code>{credential['password']}</code>\n\n"
+                msg += f"👤 <b>Username:</b> <code>{html.escape(credential['email_or_username'])}</code>\n"
+                msg += f"🔒 <b>Password:</b> <code>{html.escape(credential['password'])}</code>\n\n"
                 
             msg += (
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"

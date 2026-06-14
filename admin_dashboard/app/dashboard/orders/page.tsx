@@ -33,6 +33,23 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetchOrders()
+
+    // Subscribe to real-time changes
+    const channel = supabase
+      .channel('orders-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        (payload) => {
+          console.log('Realtime change received:', payload)
+          fetchOrders()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   const handleDeleteOrder = async (orderId: string, paymentId: string | null) => {

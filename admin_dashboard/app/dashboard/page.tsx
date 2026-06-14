@@ -67,6 +67,34 @@ export default function AnalyticsPage() {
     }
 
     fetchAnalytics()
+
+    // Subscribe to real-time changes on orders and credentials
+    const ordersChannel = supabase
+      .channel('analytics-orders-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        () => {
+          fetchAnalytics()
+        }
+      )
+      .subscribe()
+
+    const credentialsChannel = supabase
+      .channel('analytics-credentials-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'credentials' },
+        () => {
+          fetchAnalytics()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(ordersChannel)
+      supabase.removeChannel(credentialsChannel)
+    }
   }, [])
 
   const headingStyle = "font-playfair font-black tracking-wide text-white"

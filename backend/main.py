@@ -98,8 +98,11 @@ async def send_telegram_message(chat_id: int, text: str, reply_markup: Optional[
             response = await client.post(url, json=payload, timeout=10.0)
             if response.status_code != 200:
                 logger.error(f"Failed to send Telegram message to {chat_id}: {response.text}")
+                return False
+            return True
     except Exception as e:
-        logger.error(f"Error sending Telegram message to {chat_id}: {str(e)}")
+        logger.error(f"Exception sending Telegram message: {str(e)}")
+        return False
 
 async def notify_admin_on_sale(product_name: str, amount: float, category: str, order_id: str):
     """Notifies admin on Telegram about a new sale"""
@@ -177,10 +180,6 @@ async def process_digital_delivery(order_id: str, payment_id: str, amount: float
         product_display_name = f"{html.escape(product_name)}{duration_text}"
         
         if len(credentials) == qty:
-            for cred in credentials:
-                supabase.table("credentials").update({"status": "USED"}).eq("id", cred["id"]).execute()
-            update_order_completed(order["id"], "DELIVERED")
-            
             msg = (
                 f"🎉 <b>RAZORPAY PAYMENT SUCCESSFUL!</b> 🎉\n\n"
                 f"Thank you for purchasing <b>{qty}x {product_display_name}</b>!\n"
@@ -199,14 +198,35 @@ async def process_digital_delivery(order_id: str, payment_id: str, amount: float
             )
             
             keyboard = {"inline_keyboard": [[{"text": "🏠 Main Menu", "callback_data": "main_menu"}]]}
-            await send_telegram_message(telegram_id, msg, reply_markup=keyboard)
             
-            if customer_email:
-                try:
-                    # Optional: We could trigger an email here, but for now we'll just log it.
-                    logger.info(f"Customer email available for order {order['id']}: {customer_email}")
-                except Exception as e:
-                    pass
+            # Send message first. If it succeeds, THEN mark as USED!
+            success = await send_telegram_message(telegram_id, msg, reply_markup=keyboard)
+            
+            if success:
+                for cred in credentials:
+                    supabase.table("credentials").update({"status": "USED"}).eq("id", cred["id"]).execute()
+                update_order_completed(order["id"], "DELIVERED")
+                
+                if customer_email:
+                    try:
+                        from backend.services.resend_service import send_credential_email
+                        # Convert to simple list of dicts for email
+                        creds_list = [{"username": c["email_or_username"], "password": c["password"]} for c in credentials]
+                        # Wait, send_credential_email only supports one. Let's loop.
+                        for c in credentials:
+                            await send_credential_email(
+                                to_email=customer_email,
+                                product_name=product_display_name,
+                                order_id=order["id"],
+                                username=c['email_or_username'],
+                                password=c['password']
+                            )
+                        logger.info(f"Auto-delivered emails to {customer_email}")
+                    except Exception as e:
+                        logger.error(f"Failed email auto-delivery to {customer_email}: {e}")
+            else:
+                update_order_completed(order["id"], "MANUAL_PROCESSING")
+                logger.error(f"Telegram delivery failed for Razorpay order {order['id']}. Kept UNUSED.")
         else:
             update_order_completed(order["id"], "MANUAL_PROCESSING")
             msg = (

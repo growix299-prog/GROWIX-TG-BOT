@@ -690,10 +690,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         credentials = credentials_response.data or []
 
         if len(credentials) == qty:
-            for cred in credentials:
-                supabase.table("credentials").update({"status": "USED"}).eq("id", cred["id"]).execute()
-            
-            update_order_completed(order_data["id"], "DELIVERED")
             duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing", "AI") and months > 0 else ""
             product_display_name = f"{html.escape(product['name'])}{duration_text}"
             
@@ -712,11 +708,37 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 
             msg += (
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"<tg-emoji emoji-id=\"5463139369978174548\">⚠️</tg-emoji> <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n"
+                f"<tg-emoji emoji-id=\"5463139369978174548\">⚠️</tg-emoji> <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
+                f"📧 <b>Want credentials on Email?</b>\n"
+                f"<i>Type your email address in this chat right now to receive them via email, or tap Skip!</i>\n"
             )
             
-            keyboard = [[InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]]
-            await query.edit_message_text(text=msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
+            keyboard = [
+                [InlineKeyboardButton("⏭️ Skip — No Email Needed", callback_data="skip_email")],
+                [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
+            ]
+            
+            try:
+                await query.edit_message_text(text=msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
+                
+                # Message sent successfully! Mark as USED
+                for cred in credentials:
+                    supabase.table("credentials").update({"status": "USED"}).eq("id", cred["id"]).execute()
+                update_order_completed(order_data["id"], "DELIVERED")
+                
+                # Set up the next step for email collection
+                context.user_data['awaiting_optional_email'] = {
+                    "product": product,
+                    "credentials": credentials,
+                    "product_display_name": product_display_name,
+                    "order_id": order_data["id"]
+                }
+            except Exception as e:
+                logger.error(f"Telegram delivery failed for Wallet order {order_data['id']}: {e}")
+                # Refund wallet since delivery failed
+                refund_wallet_balance(user.id, price, description=f"Refund: Delivery failed for {product['name']}")
+                update_order_completed(order_data["id"], "FAILED_DELIVERY")
+                await query.edit_message_text("❌ Delivery failed due to a system error. Your wallet has been refunded.", parse_mode="HTML")
         else:
             update_order_completed(order_data["id"], "MANUAL_PROCESSING")
             msg = (

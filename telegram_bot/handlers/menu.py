@@ -502,11 +502,11 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             f"<tg-emoji emoji-id=\"5458603043203327669\">🔔</tg-emoji> <b>Name:</b> {anim_emoji} <b>{product['name']}</b>\n\n"
             f"<tg-emoji emoji-id=\"5217822164362739968\">🗂️</tg-emoji> <b>Category:</b> <b>{product['category']}</b>\n"
         )
-        if product['category'] in ('OTT', 'VideoEditing'):
+        if product['category'] in ('OTT', 'VideoEditing', 'AI'):
             details += (
-                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>1 Month:</b> ₹{float(product.get('price_1m') or 0):.2f}\n"
-                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>3 Months:</b> ₹{float(product.get('price_3m') or 0):.2f}\n"
-                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>6 Months:</b> ₹{float(product.get('price_6m') or 0):.2f}\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>1 Month:</b> ₹{float(product.get('price_1m') or 0):.2f}  <i>({stock_by_duration[1]} in stock)</i>\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>3 Months:</b> ₹{float(product.get('price_3m') or 0):.2f}  <i>({stock_by_duration[3]} in stock)</i>\n"
+                f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>6 Months:</b> ₹{float(product.get('price_6m') or 0):.2f}  <i>({stock_by_duration[6]} in stock)</i>\n"
             )
         else:
             details += f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>Price:</b> ₹{float(product['price']):.2f}\n"
@@ -522,7 +522,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         details += f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
         
         keyboard = []
-        if product['category'] in ('OTT', 'VideoEditing'):
+        if product['category'] in ('OTT', 'VideoEditing', 'AI'):
             if stock_by_duration[1] > 0:
                 keyboard.append([InlineKeyboardButton(f"💳 Buy 1 Month (₹{float(product.get('price_1m') or 0):.2f})", callback_data=f"buy_{product['id']}_1")])
             else:
@@ -643,7 +643,16 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         wallet_balance = get_wallet_balance(user.id)
 
         if wallet_balance < price:
-            await query.answer(f"❌ Insufficient balance! You have ₹{wallet_balance:.2f} but need ₹{price:.2f}.", show_alert=True)
+            msg = (
+                f"❌ <b>INSUFFICIENT WALLET BALANCE</b>\n\n"
+                f"You need <b>₹{price:.2f}</b> to purchase this, but your wallet only has <b>₹{wallet_balance:.2f}</b>.\n\n"
+                f"Please add funds to your wallet to continue."
+            )
+            keyboard = [
+                [InlineKeyboardButton("➕ Add Funds", callback_data="wallet_deposit")],
+                [InlineKeyboardButton("🔙 Back", callback_data="view_wallet")]
+            ]
+            await query.edit_message_text(text=msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
             return
 
         # Deduct from wallet

@@ -145,18 +145,29 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             usernames = "\n".join([c["email_or_username"] for c in credentials])
             passwords = "\n".join([c["password"] for c in credentials])
-            await send_game_credential_email(
+            success = await send_game_credential_email(
                 to_email=email,
                 product_name=f"{product_display_name} (x{qty})",
                 order_id=order_data["order_id"],
                 username=usernames,
                 password=passwords
             )
-            await message.reply_text(
-                f"✅ <b>Credentials sent to {email} successfully!</b>\n\nCheck your inbox (and spam folder).",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]]),
-                parse_mode="HTML"
-            )
+            
+            if success:
+                # Update DB with email info
+                supabase.table("orders").update({
+                    "customer_email": email,
+                    "email_sent": True
+                }).eq("id", order_data["order_id"]).execute()
+                
+                await message.reply_text(
+                    f"✅ <b>Credentials sent to {email} successfully!</b>\n\nCheck your inbox (and spam folder).",
+                    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]]),
+                    parse_mode="HTML"
+                )
+            else:
+                raise Exception("Email service returned false")
+                
         except Exception as e:
             logger.error(f"Error sending email: {e}")
             await message.reply_text(

@@ -156,12 +156,15 @@ export default function OrdersPage() {
               <thead>
                 <tr className="border-b border-cyber-border text-gray-400 font-sfpro bg-cyber-fbi/40">
                   <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Transaction Reference</th>
+                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Date & Time</th>
                   <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Client TG ID</th>
+                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Email</th>
                   <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Product Item</th>
                   <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Category</th>
                   <th className="py-3.5 px-4 uppercase tracking-wider font-bold text-right">Price paid</th>
                   <th className="py-3.5 px-4 uppercase tracking-wider font-bold text-center">Payment Status</th>
                   <th className="py-3.5 px-4 uppercase tracking-wider font-bold text-center">Delivery Status</th>
+                  <th className="py-3.5 px-4 uppercase tracking-wider font-bold text-center">Email Sent</th>
                   <th className="py-3.5 px-4 uppercase tracking-wider font-bold text-center">Actions</th>
                 </tr>
               </thead>
@@ -179,7 +182,13 @@ export default function OrdersPage() {
                       <td className="py-4 px-4 font-bold text-yellow-400">
                         <code>{order.payment_id || order.id.slice(0, 16)}</code>
                       </td>
+                      <td className="py-4 px-4 text-gray-400 font-medium text-[11px]">
+                        {new Date(order.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}
+                      </td>
                       <td className="py-4 px-4 text-gray-400 font-bold">@{order.telegram_id}</td>
+                      <td className="py-4 px-4 text-gray-400 font-medium">
+                        {order.customer_email || <span className="text-gray-600 text-[10px]">Not Provided</span>}
+                      </td>
                       <td className="py-4 px-4 font-bold text-white">
                         {order.products?.name}
                         {order.subscription_months > 0 && <span className="ml-1 text-gray-400 font-normal">({order.subscription_months} Month{order.subscription_months > 1 ? 's' : ''})</span>}
@@ -219,6 +228,15 @@ export default function OrdersPage() {
                            order.delivery_status === 'MANUAL_PROCESSING' ? 'MANUAL PROCESSING' : 
                            order.delivery_status}
                         </span>
+                      </td>
+
+                      {/* Email Status Badge */}
+                      <td className="py-4 px-4 text-center">
+                        {order.email_sent ? (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/20">SENT</span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-800 text-gray-400 border border-gray-600/20">NO</span>
+                        )}
                       </td>
 
                       {/* Actions */}

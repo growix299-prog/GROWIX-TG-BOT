@@ -482,7 +482,7 @@ export default function CredentialsPage() {
           <h2 className={`${headingStyle} text-lg`}>Accounts Stock Inventory Log</h2>
           
           <div className="overflow-x-auto max-h-[480px]">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full min-w-[800px] text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-cyber-border text-gray-400 font-sfpro sticky top-0 bg-cyber-card/90 backdrop-blur-sm z-10">
                   <th className="py-3 px-4 uppercase tracking-wider font-bold">Product Item</th>

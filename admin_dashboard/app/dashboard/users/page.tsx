@@ -181,7 +181,7 @@ export default function UsersPage() {
       ) : (
         <div className="glass-panel rounded-xl border border-cyber-border/80 overflow-hidden shadow-glass">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full min-w-[1000px] text-left border-collapse text-xs">
               <thead><tr className="border-b border-cyber-border text-gray-400 font-sfpro bg-cyber-fbi/40">
                 <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Telegram ID</th>
                 <th className="py-3.5 px-4 uppercase tracking-wider font-bold">Username</th>
@@ -217,9 +217,8 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* User Detail Modal */}
       {selectedUser && (
-        <div className="fixed inset-0 pl-64 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-[100]" onClick={() => setSelectedUser(null)}>
+        <div className="fixed inset-0 lg:pl-64 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-[100]" onClick={() => setSelectedUser(null)}>
           <div className="bg-cyber-bg border border-cyber-border rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto relative z-[101]" onClick={e => e.stopPropagation()}>
             <div className="p-6 border-b border-cyber-border flex items-center justify-between">
               <div>
@@ -233,9 +232,9 @@ export default function UsersPage() {
               <button onClick={() => setModalTab('orders')} className={`px-6 py-3 text-xs font-bold uppercase tracking-widest font-sfpro ${modalTab==='orders' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-gray-500'}`}>Orders ({(selectedUser.orders||[]).length})</button>
               <button onClick={() => setModalTab('transactions')} className={`px-6 py-3 text-xs font-bold uppercase tracking-widest font-sfpro ${modalTab==='transactions' ? 'text-yellow-400 border-b-2 border-yellow-400' : 'text-gray-500'}`}>Wallet Transactions ({(selectedUser.wallet_transactions||[]).length})</button>
             </div>
-            <div className="p-6">
+            <div className="p-6 overflow-x-auto">
               {modalTab === 'orders' ? (
-                <table className="w-full text-left text-xs"><thead><tr className="border-b border-cyber-border text-gray-400 font-sfpro">
+                <table className="w-full min-w-[600px] text-left text-xs"><thead><tr className="border-b border-cyber-border text-gray-400 font-sfpro">
                   <th className="py-2 px-3">Product</th><th className="py-2 px-3">Category</th><th className="py-2 px-3 text-right">Amount</th><th className="py-2 px-3 text-center">Payment</th><th className="py-2 px-3 text-center">Delivery</th><th className="py-2 px-3">Date</th>
                 </tr></thead><tbody className="divide-y divide-cyber-border/30">
                   {(selectedUser.orders||[]).length === 0 ? <tr><td colSpan={6} className="py-8 text-center text-gray-500">No orders</td></tr> :
@@ -251,7 +250,7 @@ export default function UsersPage() {
                   ))}
                 </tbody></table>
               ) : (
-                <table className="w-full text-left text-xs"><thead><tr className="border-b border-cyber-border text-gray-400 font-sfpro">
+                <table className="w-full min-w-[600px] text-left text-xs"><thead><tr className="border-b border-cyber-border text-gray-400 font-sfpro">
                   <th className="py-2 px-3">Type</th><th className="py-2 px-3 text-right">Amount</th><th className="py-2 px-3">Description</th><th className="py-2 px-3">Reference</th><th className="py-2 px-3">Date</th>
                 </tr></thead><tbody className="divide-y divide-cyber-border/30">
                   {(selectedUser.wallet_transactions||[]).length === 0 ? <tr><td colSpan={5} className="py-8 text-center text-gray-500">No transactions</td></tr> :

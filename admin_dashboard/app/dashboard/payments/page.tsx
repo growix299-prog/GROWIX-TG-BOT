@@ -66,7 +66,7 @@ export default function PaymentsPage() {
           <h2 className={`${headingStyle} text-lg`}>Razorpay Payment Logs</h2>
           
           <div className="overflow-x-auto max-h-[500px]">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[700px] text-left border-collapse">
               <thead>
                 <tr className="border-b border-cyber-border text-gray-400 sticky top-0 bg-cyber-card/90 backdrop-blur-sm z-10">
                   <th className="py-3 px-4 uppercase tracking-wider font-bold">Payment ID</th>

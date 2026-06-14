@@ -201,7 +201,7 @@ export default function AnalyticsPage() {
             <div className="glass-panel p-6 rounded-xl border border-cyber-border/80 lg:col-span-2">
               <h2 className={`${headingStyle} text-lg mb-4`}>Recent Orders Activity</h2>
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
+                <table className="w-full min-w-[700px] text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-cyber-border text-gray-400 font-sfpro">
                       <th className="py-3 px-4 uppercase tracking-wider font-bold">Order ID / Reference</th>

@@ -18,7 +18,9 @@ import {
   MessageSquareHeart,
   Wallet,
   Megaphone,
-  Settings
+  Settings,
+  Menu,
+  X
 } from 'lucide-react'
 
 export default function DashboardLayout({
@@ -31,6 +33,11 @@ export default function DashboardLayout({
   const [authorized, setAuthorized] = useState(false)
   const [loading, setLoading] = useState(true)
   const [adminName, setAdminName] = useState('Agent')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  useEffect(() => {
+    setIsSidebarOpen(false)
+  }, [pathname])
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -76,22 +83,38 @@ export default function DashboardLayout({
   ]
 
   return (
-    <div className="min-h-screen bg-cyber-bg text-cyber-text flex font-poppins">
+    <div className="min-h-screen bg-cyber-bg text-cyber-text flex font-poppins overflow-hidden">
       {/* Background cyber grid */}
       <div className="fixed inset-0 bg-[linear-gradient(to_right,#0c0e12_1px,transparent_1px),linear-gradient(to_bottom,#0c0e12_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20 pointer-events-none"></div>
 
+      {/* Mobile Sidebar backdrop */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar Navigation */}
-      <aside className="w-64 bg-cyber-fbi/80 backdrop-blur-md border-r border-cyber-border z-30 flex flex-col justify-between fixed top-0 bottom-0">
+      <aside className={`w-64 bg-cyber-fbi/80 backdrop-blur-md border-r border-cyber-border z-30 flex flex-col justify-between fixed top-0 bottom-0 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex-1 overflow-y-auto">
           {/* Header Panel */}
-          <div className="p-6 border-b border-cyber-border flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-yellow-950 border border-yellow-500/40 flex items-center justify-center shadow-glow-yellow">
-              <Store className="w-5 h-5 text-yellow-400" />
+          <div className="p-6 border-b border-cyber-border flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-yellow-950 border border-yellow-500/40 flex items-center justify-center shadow-glow-yellow">
+                <Store className="w-5 h-5 text-yellow-400" />
+              </div>
+              <div>
+                <h2 className="text-[10px] font-bold text-yellow-400 uppercase tracking-widest font-sfpro">NEXUS STORE</h2>
+                <h1 className="text-sm font-black font-playfair tracking-wide text-white">ADMIN CONTROL</h1>
+              </div>
             </div>
-            <div>
-              <h2 className="text-[10px] font-bold text-yellow-400 uppercase tracking-widest font-sfpro">NEXUS STORE</h2>
-              <h1 className="text-sm font-black font-playfair tracking-wide text-white">ADMIN CONTROL</h1>
-            </div>
+            <button 
+              onClick={() => setIsSidebarOpen(false)}
+              className="lg:hidden p-1.5 text-gray-400 hover:text-white hover:bg-cyber-card/40 rounded-lg transition-all"
+            >
+              <X className="w-4.5 h-4.5" />
+            </button>
           </div>
 
           {/* Current User clearance */}
@@ -149,15 +172,23 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main dashboard content area */}
-      <div className="flex-1 pl-64 relative z-10 flex flex-col min-h-screen">
-        <header className="h-16 border-b border-cyber-border/50 bg-cyber-bg/50 backdrop-blur-md sticky top-0 px-8 flex items-center justify-between z-20">
-          <h2 className="text-xs uppercase tracking-[0.2em] text-yellow-400/80 font-bold font-sfpro">Nexus Admin Console</h2>
+      <div className="flex-1 lg:pl-64 relative z-10 flex flex-col min-h-screen min-w-0 overflow-hidden">
+        <header className="h-16 border-b border-cyber-border/50 bg-cyber-bg/50 backdrop-blur-md sticky top-0 px-4 lg:px-8 flex items-center justify-between z-20">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-white hover:bg-cyber-card/40 rounded-lg transition-all"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <h2 className="text-xs uppercase tracking-[0.2em] text-yellow-400/80 font-bold font-sfpro">Nexus Admin Console</h2>
+          </div>
           <div className="flex items-center gap-4 text-xs">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
-            <span className="text-gray-500 font-sfpro">Database Status: Connected</span>
+            <span className="text-gray-500 font-sfpro hidden sm:inline">Database Status: Connected</span>
           </div>
         </header>
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 p-4 lg:p-8 overflow-y-auto overflow-x-hidden min-w-0">
           {children}
         </main>
       </div>

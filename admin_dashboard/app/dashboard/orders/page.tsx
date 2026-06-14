@@ -169,7 +169,7 @@ export default function OrdersPage() {
       ) : (
         <div className="glass-panel rounded-xl border border-cyber-border/80 shadow-glass overflow-hidden">
           <div className="max-h-[calc(100vh-260px)] overflow-y-auto overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs relative">
+            <table className="w-full min-w-[1200px] text-left border-collapse text-xs relative">
               <thead>
                 <tr className="border-b border-cyber-border text-gray-400 font-sfpro bg-[#0a0c10] sticky top-0 z-10 shadow-sm">
                   <th className="py-2.5 px-3 uppercase tracking-wider font-bold bg-[#0a0c10]">Transaction Reference</th>

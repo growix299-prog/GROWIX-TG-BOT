@@ -1068,7 +1068,20 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         )
 
     elif data == "write_review":
-        context.user_data.pop('awaiting_optional_email', None)
+        awaiting_email = context.user_data.pop('awaiting_optional_email', None)
+        order_id = awaiting_email.get("order_id") if awaiting_email else None
+        
+        try:
+            if order_id:
+                supabase.table("orders").update({"delivery_status": "DELIVERED"}).eq("id", order_id).execute()
+            else:
+                # Fallback: update any pending AWAITING_EMAIL_ONLY order for this user
+                res = supabase.table("orders").select("id").eq("telegram_id", user.id).eq("status", "COMPLETED").eq("delivery_status", "AWAITING_EMAIL_ONLY").order("created_at", desc=True).limit(1).execute()
+                if res.data:
+                    supabase.table("orders").update({"delivery_status": "DELIVERED"}).eq("id", res.data[0]["id"]).execute()
+        except Exception as e:
+            logger.error(f"Error updating write_review email order: {e}")
+
         context.user_data['awaiting_review'] = True
         review_text = (
             f"<blockquote>"
@@ -1082,7 +1095,20 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         )
 
     elif data == "skip_email":
-        context.user_data.pop('awaiting_optional_email', None)
+        awaiting_email = context.user_data.pop('awaiting_optional_email', None)
+        order_id = awaiting_email.get("order_id") if awaiting_email else None
+        
+        try:
+            if order_id:
+                supabase.table("orders").update({"delivery_status": "DELIVERED"}).eq("id", order_id).execute()
+            else:
+                # Fallback: update any pending AWAITING_EMAIL_ONLY order for this user
+                res = supabase.table("orders").select("id").eq("telegram_id", user.id).eq("status", "COMPLETED").eq("delivery_status", "AWAITING_EMAIL_ONLY").order("created_at", desc=True).limit(1).execute()
+                if res.data:
+                    supabase.table("orders").update({"delivery_status": "DELIVERED"}).eq("id", res.data[0]["id"]).execute()
+        except Exception as e:
+            logger.error(f"Error updating skipped email order: {e}")
+
         await query.edit_message_text(
             text="✅ <b>No problem!</b> Your credentials are in the chat above. Enjoy your purchase! 🎉",
             reply_markup=InlineKeyboardMarkup([

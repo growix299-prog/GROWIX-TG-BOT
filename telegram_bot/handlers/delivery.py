@@ -190,7 +190,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await message.reply_text(f"⏳ <i>Fetching {qty} {product['category'].lower()} credentials, please wait...</i>", parse_mode="HTML")
             
             q = supabase.table("credentials").select("*").eq("product_id", product["id"]).eq("status", "UNUSED")
-            if product["category"] == "OTT" and active_order.get("subscription_months", 0) > 0:
+            if product["category"] in ("OTT", "VideoEditing") and active_order.get("subscription_months", 0) > 0:
                 q = q.eq("subscription_months", active_order.get("subscription_months"))
             credentials_response = q.limit(qty).execute()
             
@@ -203,7 +203,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 update_order_completed(active_order["id"], "DELIVERED")
                 
                 months = active_order.get("subscription_months", 0)
-                duration_text = f" ({months} Months)" if product["category"] == "OTT" and months > 0 else ""
+                duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing") and months > 0 else ""
                 product_display_name = f"{product['name']}{duration_text}"
                 
                 # Send credentials via Telegram FIRST
@@ -281,7 +281,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         # Check stock
         q = supabase.table("credentials").select("id").eq("product_id", product["id"]).eq("status", "UNUSED")
-        if product["category"] == "OTT" and months > 0:
+        if product["category"] in ("OTT", "VideoEditing") and months > 0:
             q = q.eq("subscription_months", months)
         stock_resp = q.execute()
         stock_count = len(stock_resp.data) if stock_resp.data else 0
@@ -291,7 +291,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
             
         # Proceed to checkout
-        if product["category"] == "OTT" and months > 0:
+        if product["category"] in ("OTT", "VideoEditing") and months > 0:
             price = float(product.get(f"price_{months}m") or 0)
             product_name_display = f"{product['name']} ({months} Months)"
         else:
@@ -363,7 +363,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         matched_name = matches[0]
         selected_product = product_names[matched_name]
         
-        if selected_product['category'] == 'OTT':
+        if selected_product['category'] in ('OTT', 'VideoEditing'):
             from telegram_bot.handlers.menu import get_product_animated_emoji
             anim_emoji = get_product_animated_emoji(selected_product['name'])
             

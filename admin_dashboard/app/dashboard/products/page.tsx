@@ -121,7 +121,8 @@ export default function ProductsPage() {
       setFormError("Product name is required.")
       return
     }
-    if (category !== 'OTT') {
+    const hasDurations = category === 'OTT' || category === 'VideoEditing';
+    if (!hasDurations) {
       const numPrice = Number(price)
       if (isNaN(numPrice) || numPrice < 0) {
         setFormError("Please enter a valid positive base price.")
@@ -132,10 +133,10 @@ export default function ProductsPage() {
     const payload = {
       name,
       category,
-      price: category === 'OTT' ? 0 : Number(price),
-      price_1m: category === 'OTT' ? Number(price1m) : 0,
-      price_3m: category === 'OTT' ? Number(price3m) : 0,
-      price_6m: category === 'OTT' ? Number(price6m) : 0,
+      price: hasDurations ? 0 : Number(price),
+      price_1m: hasDurations ? Number(price1m) : 0,
+      price_3m: hasDurations ? Number(price3m) : 0,
+      price_6m: hasDurations ? Number(price6m) : 0,
       delivery_type: deliveryType,
       active
     }
@@ -356,7 +357,7 @@ export default function ProductsPage() {
                                 {prod.category === 'VideoEditing' ? 'VIDEO EDITING' : prod.category}
                               </span>
                               <span className="text-[11px] font-black font-sfpro flex flex-col items-end gap-1">
-                                {prod.category === 'OTT' ? (
+                                {prod.category === 'OTT' || prod.category === 'VideoEditing' ? (
                                   <>
                                     <span className="text-cyan-400">1M: ₹{prod.price_1m || 0}</span>
                                     <span className="text-yellow-400">3M: ₹{prod.price_3m || 0}</span>
@@ -442,7 +443,7 @@ export default function ProductsPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className={category === 'OTT' ? "col-span-2" : ""}>
+                <div className={category === 'OTT' || category === 'VideoEditing' ? "col-span-2" : ""}>
                   <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Category</label>
                   <select
                     value={category}
@@ -456,7 +457,7 @@ export default function ProductsPage() {
                   </select>
                 </div>
                 
-                {category !== 'OTT' && (
+                {category !== 'OTT' && category !== 'VideoEditing' && (
                   <div>
                     <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Base Price (INR)</label>
                     <input
@@ -472,7 +473,7 @@ export default function ProductsPage() {
                 )}
               </div>
 
-              {category === 'OTT' && (
+              {(category === 'OTT' || category === 'VideoEditing') && (
                 <div className="grid grid-cols-3 gap-2 p-3 bg-cyber-bg border border-cyber-border rounded-lg">
                   <div>
                     <label className="block text-[10px] uppercase tracking-wider text-cyan-400 font-bold mb-1">1 Month (₹)</label>

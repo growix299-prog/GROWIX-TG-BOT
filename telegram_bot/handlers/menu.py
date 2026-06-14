@@ -502,7 +502,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             f"<tg-emoji emoji-id=\"5458603043203327669\">🔔</tg-emoji> <b>Name:</b> {anim_emoji} <b>{product['name']}</b>\n\n"
             f"<tg-emoji emoji-id=\"5217822164362739968\">🗂️</tg-emoji> <b>Category:</b> <b>{product['category']}</b>\n"
         )
-        if product['category'] == 'OTT':
+        if product['category'] in ('OTT', 'VideoEditing'):
             details += (
                 f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>1 Month:</b> ₹{float(product.get('price_1m') or 0):.2f}\n"
                 f"<tg-emoji emoji-id=\"5364323696397790175\">💰</tg-emoji> <b>3 Months:</b> ₹{float(product.get('price_3m') or 0):.2f}\n"
@@ -522,7 +522,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         details += f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
         
         keyboard = []
-        if product['category'] == 'OTT':
+        if product['category'] in ('OTT', 'VideoEditing'):
             if stock_by_duration[1] > 0:
                 keyboard.append([InlineKeyboardButton(f"💳 Buy 1 Month (₹{float(product.get('price_1m') or 0):.2f})", callback_data=f"buy_{product['id']}_1")])
             else:
@@ -571,7 +571,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         stock_count = 0
         try:
             q = supabase.table("credentials").select("id").eq("product_id", product_id).eq("status", "UNUSED")
-            if product["category"] == "OTT" and months > 0:
+            if product["category"] in ("OTT", "VideoEditing") and months > 0:
                 q = q.eq("subscription_months", months)
             stock_check = q.execute()
             stock_count = len(stock_check.data) if stock_check.data else 0
@@ -579,7 +579,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             stock_count = 0
 
         if stock_count == 0:
-            duration_text = f" ({months} Months)" if product["category"] == "OTT" and months > 0 else ""
+            duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing") and months > 0 else ""
             await query.edit_message_text(
                 text=(
                     f"<blockquote>"
@@ -601,7 +601,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         
         keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="main_menu")]]
         
-        duration_text = f" ({months} Months)" if product["category"] == "OTT" and months > 0 else ""
+        duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing") and months > 0 else ""
         
         anim_emoji = get_product_animated_emoji(product['name'])
         await query.edit_message_text(
@@ -635,7 +635,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_text("❌ Product not found.", parse_mode="HTML")
             return
 
-        if product["category"] == "OTT" and months > 0:
+        if product["category"] in ("OTT", "VideoEditing") and months > 0:
             price = float(product.get(f"price_{months}m") or 0) * qty
         else:
             price = float(product["price"]) * qty
@@ -876,7 +876,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_text("❌ <b>Product not found.</b>", parse_mode="HTML")
             return
 
-        if product["category"] == "OTT" and months > 0:
+        if product["category"] in ("OTT", "VideoEditing") and months > 0:
             price = float(product.get(f"price_{months}m") or 0) * qty
         else:
             price = float(product["price"]) * qty

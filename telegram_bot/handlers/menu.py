@@ -638,7 +638,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         if product["category"] in ("OTT", "VideoEditing") and months > 0:
             price = float(product.get(f"price_{months}m") or 0) * qty
         else:
-            price = float(product["price"]) * qty
+            price = float(product.get("price") or 0.0) * qty
             
         wallet_balance = get_wallet_balance(user.id)
 
@@ -879,7 +879,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         if product["category"] in ("OTT", "VideoEditing") and months > 0:
             price = float(product.get(f"price_{months}m") or 0) * qty
         else:
-            price = float(product["price"]) * qty
+            price = float(product.get("price") or 0.0) * qty
         
         pay_res = await create_payment_link(
             amount=price,

@@ -185,7 +185,7 @@ export default function UsersPage() {
                     <td className="py-4 px-4 text-right font-bold text-emerald-400">₹{parseFloat(u.wallet_balance||0).toFixed(2)}</td>
                     <td className="py-4 px-4 text-center"><span className="px-2 py-0.5 rounded bg-yellow-950/70 text-yellow-400 border border-yellow-500/10 text-[9px] font-bold">{u.total_orders}</span></td>
                     <td className="py-4 px-4 text-right text-gray-300">₹{(u.total_spent||0).toFixed(2)}</td>
-                    <td className="py-4 px-4 text-gray-500">{(u.created_at||'').slice(0,10)}</td>
+                    <td className="py-4 px-4 text-gray-500">{new Date(u.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                     <td className="py-4 px-4 text-center flex gap-1.5 justify-center">
                       <button onClick={() => { setSelectedUser(u); setModalTab('orders') }} className="p-1.5 bg-blue-950/30 border border-blue-500/30 text-blue-400 rounded hover:bg-blue-900/50 transition-colors" title="View Details"><Eye className="w-4 h-4"/></button>
                       <button onClick={() => setActionModal({type:'add', user:u})} className="p-1.5 bg-emerald-950/30 border border-emerald-500/30 text-emerald-400 rounded hover:bg-emerald-900/50 transition-colors" title="Add Funds"><Plus className="w-4 h-4"/></button>
@@ -206,7 +206,7 @@ export default function UsersPage() {
             <div className="p-6 border-b border-cyber-border flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-black text-white font-playfair">{selectedUser.first_name || 'User'} — @{selectedUser.username || 'N/A'}</h2>
-                <p className="text-xs text-gray-500 font-sfpro mt-1">TG ID: <code className="text-yellow-400">{selectedUser.telegram_id}</code> | Balance: <span className="text-emerald-400 font-bold">₹{parseFloat(selectedUser.wallet_balance||0).toFixed(2)}</span> | Orders: {selectedUser.total_orders} | Joined: {(selectedUser.created_at||'').slice(0,10)}</p>
+                <p className="text-xs text-gray-500 font-sfpro mt-1">TG ID: <code className="text-yellow-400">{selectedUser.telegram_id}</code> | Balance: <span className="text-emerald-400 font-bold">₹{parseFloat(selectedUser.wallet_balance||0).toFixed(2)}</span> | Orders: {selectedUser.total_orders} | Joined: {new Date(selectedUser.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
               </div>
               <button onClick={() => setSelectedUser(null)} className="p-2 text-gray-400 hover:text-white"><X className="w-5 h-5"/></button>
             </div>
@@ -228,7 +228,7 @@ export default function UsersPage() {
                       <td className="py-3 px-3 text-right text-emerald-400 font-bold">₹{parseFloat(o.amount||0).toFixed(2)}</td>
                       <td className="py-3 px-3 text-center"><span className={`px-2 py-0.5 rounded text-[9px] font-bold ${o.status==='COMPLETED'?'bg-emerald-950 text-emerald-400':'bg-yellow-950 text-yellow-500'}`}>{o.status}</span></td>
                       <td className="py-3 px-3 text-center"><span className={`px-2 py-0.5 rounded text-[9px] font-bold ${o.delivery_status==='DELIVERED'?'bg-emerald-950 text-emerald-400':'bg-yellow-950 text-yellow-500'}`}>{o.delivery_status}</span></td>
-                      <td className="py-3 px-3 text-gray-500">{(o.created_at||'').slice(0,10)}</td>
+                      <td className="py-3 px-3 text-gray-500">{new Date(o.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                     </tr>
                   ))}
                 </tbody></table>
@@ -246,7 +246,7 @@ export default function UsersPage() {
                         {t.payment_details && <div className="text-[9px] text-yellow-500 mt-1">{t.payment_details}</div>}
                       </td>
                       <td className="py-3 px-3 text-yellow-400 font-mono text-[10px]">{t.reference_id || '-'}</td>
-                      <td className="py-3 px-3 text-gray-500">{(t.created_at||'').slice(0,10)}</td>
+                      <td className="py-3 px-3 text-gray-500">{new Date(t.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                     </tr>
                   ))}
                 </tbody></table>

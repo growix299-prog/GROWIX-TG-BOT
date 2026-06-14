@@ -121,7 +121,7 @@ export default function ProductsPage() {
       setFormError("Product name is required.")
       return
     }
-    const hasDurations = category === 'OTT' || category === 'VideoEditing';
+    const hasDurations = category === 'OTT' || category === 'VideoEditing' || category === 'AI';
     if (!hasDurations) {
       const numPrice = Number(price)
       if (isNaN(numPrice) || numPrice < 0) {
@@ -357,7 +357,7 @@ export default function ProductsPage() {
                                 {prod.category === 'VideoEditing' ? 'VIDEO EDITING' : prod.category}
                               </span>
                               <span className="text-[11px] font-black font-sfpro flex flex-col items-end gap-1">
-                                {prod.category === 'OTT' || prod.category === 'VideoEditing' ? (
+                                {prod.category === 'OTT' || prod.category === 'VideoEditing' || prod.category === 'AI' ? (
                                   <>
                                     <span className="text-cyan-400">1M: ₹{prod.price_1m || 0}</span>
                                     <span className="text-yellow-400">3M: ₹{prod.price_3m || 0}</span>
@@ -443,7 +443,7 @@ export default function ProductsPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className={category === 'OTT' || category === 'VideoEditing' ? "col-span-2" : ""}>
+                <div className={category === 'OTT' || category === 'VideoEditing' || category === 'AI' ? "col-span-2" : ""}>
                   <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Category</label>
                   <select
                     value={category}
@@ -457,7 +457,7 @@ export default function ProductsPage() {
                   </select>
                 </div>
                 
-                {category !== 'OTT' && category !== 'VideoEditing' && (
+                {category !== 'OTT' && category !== 'VideoEditing' && category !== 'AI' && (
                   <div>
                     <label className="block text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1">Base Price (INR)</label>
                     <input
@@ -473,7 +473,7 @@ export default function ProductsPage() {
                 )}
               </div>
 
-              {(category === 'OTT' || category === 'VideoEditing') && (
+              {(category === 'OTT' || category === 'VideoEditing' || category === 'AI') && (
                 <div className="grid grid-cols-3 gap-2 p-3 bg-cyber-bg border border-cyber-border rounded-lg">
                   <div>
                     <label className="block text-[10px] uppercase tracking-wider text-cyan-400 font-bold mb-1">1 Month (₹)</label>

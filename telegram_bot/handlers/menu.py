@@ -579,7 +579,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             stock_count = 0
 
         if stock_count == 0:
-            duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing") and months > 0 else ""
+            duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing", "AI") and months > 0 else ""
             await query.edit_message_text(
                 text=(
                     f"<blockquote>"
@@ -635,7 +635,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_text("❌ Product not found.", parse_mode="HTML")
             return
 
-        if product["category"] in ("OTT", "VideoEditing") and months > 0:
+        if product["category"] in ("OTT", "VideoEditing", "AI") and months > 0:
             price = float(product.get(f"price_{months}m") or 0) * qty
         else:
             price = float(product.get("price") or 0.0) * qty
@@ -673,20 +673,52 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_text("❌ Order creation failed. Your wallet has been refunded.", parse_mode="HTML")
             return
 
-        # Request email
-        update_order_completed(order_data["id"], "AWAITING_EMAIL_GAMES")
+        # Dispatch credentials immediately
+        q = supabase.table("credentials").select("*").eq("product_id", product["id"]).eq("status", "UNUSED")
+        if product["category"] in ("OTT", "VideoEditing", "AI") and months > 0:
+            q = q.eq("subscription_months", months)
+        credentials_response = q.limit(qty).execute()
+        credentials = credentials_response.data or []
 
-        msg = (
-            f"🎉 <b>WALLET PAYMENT SUCCESSFUL!</b> 🎉\n\n"
-            f"Thank you for purchasing <b>{qty}x {product['name']}</b>!\n\n"
-            f"💰 <b>Amount Paid:</b> ₹{price:.2f} (from Wallet)\n"
-            f"👛 <b>Remaining Balance:</b> ₹{get_wallet_balance(user.id):.2f}\n\n"
-            f"━━━━━━━━━━━━━━━━━━━━━\n"
-            f"🔑 <b>NEXT STEP — GET YOUR CREDENTIALS</b>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"Type <b>anything</b> (e.g., <code>hi</code>) in this chat to receive your credentials instantly! 🚀"
-        )
-        await query.edit_message_text(text=msg, parse_mode="HTML")
+        if len(credentials) == qty:
+            for cred in credentials:
+                supabase.table("credentials").update({"status": "USED"}).eq("id", cred["id"]).execute()
+            
+            update_order_completed(order_data["id"], "DELIVERED")
+            duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing", "AI") and months > 0 else ""
+            product_display_name = f"{product['name']}{duration_text}"
+            
+            msg = (
+                f"🎉 <b>WALLET PAYMENT SUCCESSFUL!</b> 🎉\n\n"
+                f"Thank you for purchasing <b>{qty}x {product_display_name}</b>!\n"
+                f"💰 <b>Amount Paid:</b> ₹{price:.2f} (from Wallet)\n"
+                f"👛 <b>Remaining Balance:</b> ₹{get_wallet_balance(user.id):.2f}\n\n"
+                f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+                f"✨ <b>YOUR LOGIN CREDENTIALS</b> <tg-emoji emoji-id=\"5343553259971822765\">🚀</tg-emoji>\n\n"
+            )
+            for idx, credential in enumerate(credentials, 1):
+                msg += f"<b>ACCOUNT {idx}</b> <tg-emoji emoji-id=\"5427009714745517609\">🔑</tg-emoji>\n"
+                msg += f"👤 <b>Username:</b> <code>{credential['email_or_username']}</code>\n"
+                msg += f"🔒 <b>Password:</b> <code>{credential['password']}</code>\n\n"
+                
+            msg += (
+                f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+                f"<tg-emoji emoji-id=\"5463139369978174548\">⚠️</tg-emoji> <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n"
+            )
+            
+            keyboard = [[InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]]
+            await query.edit_message_text(text=msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
+        else:
+            update_order_completed(order_data["id"], "MANUAL_PROCESSING")
+            msg = (
+                f"🎉 <b>WALLET PAYMENT SUCCESSFUL!</b> 🎉\n\n"
+                f"Thank you for purchasing <b>{qty}x {product['name']}</b>!\n"
+                f"💰 <b>Amount Paid:</b> ₹{price:.2f} (from Wallet)\n\n"
+                f"⚠️ <b>STOCK PENDING:</b> We're temporarily out of instant stock. "
+                f"Your order is marked for Manual Delivery. Support will contact you shortly!"
+            )
+            keyboard = [[InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]]
+            await query.edit_message_text(text=msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
         return
 
     elif data == "view_wallet":
@@ -876,7 +908,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             await query.edit_message_text("❌ <b>Product not found.</b>", parse_mode="HTML")
             return
 
-        if product["category"] in ("OTT", "VideoEditing") and months > 0:
+        if product["category"] in ("OTT", "VideoEditing", "AI") and months > 0:
             price = float(product.get(f"price_{months}m") or 0) * qty
         else:
             price = float(product.get("price") or 0.0) * qty

@@ -161,21 +161,63 @@ async def process_digital_delivery(order_id: str, payment_id: str, amount: float
     except Exception:
         pass
 
-    if category in ("Games", "OTT"):
-        # Ask for any message before Automated Credential Dispatch
-        update_order_completed(order["id"], "AWAITING_EMAIL_GAMES")
-        msg = (
-            f"🎉 <b>PAYMENT SUCCESSFUL!</b> 🎉\n\n"
-            f"Thank you for purchasing <b>{product_name}</b>!\n\n"
-            f"━━━━━━━━━━━━━━━━━━━━━\n"
-            f"🔑 <b>NEXT STEP — GET YOUR CREDENTIALS</b>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"To receive your {category.lower()} credentials securely, "
-            f"please type <b>anything</b> (e.g., <code>hi</code>) in this chat right now.\n\n"
-            f"Your login ID and password will be delivered here instantly! 🚀"
-        )
-        await send_telegram_message(telegram_id, msg)
-        logger.info(f"{category} order set to AWAITING_EMAIL_GAMES, awaiting email from telegram_id {telegram_id}")
+    if category in ("Games", "OTT", "VideoEditing", "AI"):
+        # Fetch credentials and dispatch instantly
+        from backend.services.supabase_service import supabase
+        q = supabase.table("credentials").select("*").eq("product_id", product_id).eq("status", "UNUSED")
+        if category in ("OTT", "VideoEditing", "AI") and order.get("subscription_months", 0) > 0:
+            q = q.eq("subscription_months", order["subscription_months"])
+        
+        qty = order.get("quantity", 1)
+        credentials_response = q.limit(qty).execute()
+        credentials = credentials_response.data or []
+        
+        months = order.get("subscription_months", 0)
+        duration_text = f" ({months} Months)" if category in ("OTT", "VideoEditing", "AI") and months > 0 else ""
+        product_display_name = f"{product_name}{duration_text}"
+        
+        if len(credentials) == qty:
+            for cred in credentials:
+                supabase.table("credentials").update({"status": "USED"}).eq("id", cred["id"]).execute()
+            update_order_completed(order["id"], "DELIVERED")
+            
+            msg = (
+                f"🎉 <b>RAZORPAY PAYMENT SUCCESSFUL!</b> 🎉\n\n"
+                f"Thank you for purchasing <b>{qty}x {product_display_name}</b>!\n"
+                f"💰 <b>Amount Paid:</b> ₹{amount:.2f}\n\n"
+                f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+                f"✨ <b>YOUR LOGIN CREDENTIALS</b> <tg-emoji emoji-id=\"5343553259971822765\">🚀</tg-emoji>\n\n"
+            )
+            for idx, credential in enumerate(credentials, 1):
+                msg += f"<b>ACCOUNT {idx}</b> <tg-emoji emoji-id=\"5427009714745517609\">🔑</tg-emoji>\n"
+                msg += f"👤 <b>Username:</b> <code>{credential['email_or_username']}</code>\n"
+                msg += f"🔒 <b>Password:</b> <code>{credential['password']}</code>\n\n"
+                
+            msg += (
+                f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+                f"<tg-emoji emoji-id=\"5463139369978174548\">⚠️</tg-emoji> <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n"
+            )
+            
+            keyboard = {"inline_keyboard": [[{"text": "🏠 Main Menu", "callback_data": "main_menu"}]]}
+            await send_telegram_message(telegram_id, msg, reply_markup=keyboard)
+            
+            if customer_email:
+                try:
+                    # Optional: We could trigger an email here, but for now we'll just log it.
+                    logger.info(f"Customer email available for order {order['id']}: {customer_email}")
+                except Exception as e:
+                    pass
+        else:
+            update_order_completed(order["id"], "MANUAL_PROCESSING")
+            msg = (
+                f"🎉 <b>RAZORPAY PAYMENT SUCCESSFUL!</b> 🎉\n\n"
+                f"Thank you for purchasing <b>{qty}x {product_display_name}</b>!\n"
+                f"💰 <b>Amount Paid:</b> ₹{amount:.2f}\n\n"
+                f"⚠️ <b>STOCK PENDING:</b> We're temporarily out of instant stock. "
+                f"Your order is marked for Manual Delivery. Support will contact you shortly!"
+            )
+            keyboard = {"inline_keyboard": [[{"text": "🏠 Main Menu", "callback_data": "main_menu"}]]}
+            await send_telegram_message(telegram_id, msg, reply_markup=keyboard)
 
     # 4. Notify Admin
     await notify_admin_on_sale(product_name, amount, category, order["id"])

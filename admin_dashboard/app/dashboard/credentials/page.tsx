@@ -454,7 +454,7 @@ export default function CredentialsPage() {
         <div className="glass-panel p-6 rounded-xl border border-cyber-border/80 lg:col-span-2 space-y-4">
           {/* Stock Summary Cards */}
           <h2 className={`${headingStyle} text-lg`}>Stock Summary</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+          <div className="flex overflow-x-auto gap-3 mb-4 pb-2 snap-x scrollbar-thin scrollbar-thumb-cyber-border scrollbar-track-transparent">
             {(() => {
               const stockMap: Record<string, {total: number, used: number, unused: number, productName: string}> = {}
               credentials.forEach((cred: any) => {
@@ -465,9 +465,9 @@ export default function CredentialsPage() {
                 else stockMap[name].unused++
               })
               const entries = Object.values(stockMap).sort((a, b) => b.total - a.total)
-              if (entries.length === 0) return <div className="col-span-full text-gray-600 text-xs text-center py-4">No accounts in stock</div>
+              if (entries.length === 0) return <div className="text-gray-600 text-xs text-center py-4 w-full">No accounts in stock</div>
               return entries.map((entry) => (
-                <div key={entry.productName} className="p-3 bg-cyber-bg border border-cyber-border/50 rounded-lg">
+                <div key={entry.productName} className="p-3 bg-cyber-bg border border-cyber-border/50 rounded-lg min-w-[160px] max-w-[200px] flex-shrink-0 snap-start">
                   <p className="text-white font-bold text-xs truncate mb-1">{entry.productName}</p>
                   <p className="text-lg font-black text-yellow-400">{entry.total} <span className="text-[10px] text-gray-500 font-normal">accounts</span></p>
                   <div className="flex gap-2 mt-1">

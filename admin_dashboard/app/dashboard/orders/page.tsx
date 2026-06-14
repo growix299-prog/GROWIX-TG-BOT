@@ -180,7 +180,11 @@ export default function OrdersPage() {
                         <code>{order.payment_id || order.id.slice(0, 16)}</code>
                       </td>
                       <td className="py-4 px-4 text-gray-400 font-bold">@{order.telegram_id}</td>
-                      <td className="py-4 px-4 font-bold text-white">{order.products?.name}</td>
+                      <td className="py-4 px-4 font-bold text-white">
+                        {order.products?.name}
+                        {order.subscription_months > 0 && <span className="ml-1 text-gray-400 font-normal">({order.subscription_months} Month{order.subscription_months > 1 ? 's' : ''})</span>}
+                        {order.quantity > 1 && <span className="ml-1 text-yellow-500 text-[10px]">x{order.quantity}</span>}
+                      </td>
                       <td className="py-4 px-4">
                         <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
                           order.products?.category === 'OTT' 

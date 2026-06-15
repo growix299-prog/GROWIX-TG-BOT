@@ -4,7 +4,7 @@ import logging
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram import BotCommand
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, ChatMemberHandler, filters
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 
 # Setup path so we can import backend packages
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -19,7 +19,7 @@ if os.path.exists(env_path):
                 k, v = line.split("=", 1)
                 os.environ[k.strip()] = v.strip()
 
-from telegram_bot.handlers.menu import start_command, handle_callback_query, history_command, support_command, handle_chat_member_update
+from telegram_bot.handlers.menu import start_command, handle_callback_query, history_command, support_command
 from telegram_bot.handlers.delivery import handle_user_text
 
 # Configure logging
@@ -77,9 +77,6 @@ def main():
     application.add_handler(CommandHandler("support", support_command))
     application.add_handler(CallbackQueryHandler(handle_callback_query))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_user_text))
-    
-    # ChatMemberUpdated handler — auto-verifies when user joins the required channel
-    application.add_handler(ChatMemberHandler(handle_chat_member_update, ChatMemberHandler.CHAT_MEMBER))
 
     import time
     logger.info("Waiting 5 seconds for any old instances to shut down...")

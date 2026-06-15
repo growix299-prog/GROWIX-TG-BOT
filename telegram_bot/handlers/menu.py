@@ -598,7 +598,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                     f"</blockquote>"
                 ),
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]
+                    [InlineKeyboardButton(f"🔙 Back to {product['category']}", callback_data=f"cat_{product['category']}")]
                 ]),
                 parse_mode="HTML"
             )
@@ -607,7 +607,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         context.user_data['awaiting_quantity_for_product'] = product
         context.user_data['awaiting_quantity_duration'] = months
         
-        keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="main_menu")]]
+        keyboard = [[InlineKeyboardButton(f"🔙 Back to {product['category']}", callback_data=f"cat_{product['category']}")]]
         
         duration_text = f" ({months} Months)" if product["category"] in ("OTT", "VideoEditing", "AI") and months > 0 else ""
         

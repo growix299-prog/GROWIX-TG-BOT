@@ -415,7 +415,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = [
             [InlineKeyboardButton("👛 Pay via Wallet", callback_data=f"walletpay_{product['id']}_{months}_{qty}")],
             [InlineKeyboardButton("💳 Pay via Razorpay", callback_data=f"rzpterms_{product['id']}_{months}_{qty}")],
-            [InlineKeyboardButton("❌ Cancel", callback_data="main_menu")]
+            [InlineKeyboardButton(f"🔙 Back to {product['category']}", callback_data=f"cat_{product['category']}")]
         ]
         
         await message.reply_text(text=checkout_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
@@ -490,7 +490,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 keyboard.append([InlineKeyboardButton(f"❌ 6 Months (Out of Stock)", callback_data="ignore")])
                 
-            keyboard.append([InlineKeyboardButton("❌ Cancel", callback_data="main_menu")])
+            keyboard.append([InlineKeyboardButton(f"🔙 Back to {selected_product['category']}", callback_data=f"cat_{selected_product['category']}")])
             
             details = (
                 f"<tg-emoji emoji-id=\"5197304993920616826\">📦</tg-emoji> <b>PRODUCT DETAILS</b> <tg-emoji emoji-id=\"5197304993920616826\">📦</tg-emoji>\n"
@@ -527,7 +527,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         from telegram_bot.handlers.menu import get_product_animated_emoji
         anim_emoji = get_product_animated_emoji(selected_product['name'])
         
-        keyboard = [[InlineKeyboardButton("❌ Cancel", callback_data="main_menu")]]
+        keyboard = [[InlineKeyboardButton(f"🔙 Back to {selected_product['category']}", callback_data=f"cat_{selected_product['category']}")]]
         
         await message.reply_text(
             f"✅ {anim_emoji} <b>{selected_product['name']} IN STOCK</b>\n\n"

@@ -69,11 +69,11 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
             f"Hello <b>{html.escape(user.first_name)}</b>! To unlock our automated instant delivery of gaming credentials and premium OTT services, you must join our official channel.\n\n"
-            f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
+            f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below and then tap /start again:</i>"
         )
         keyboard = [
             [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
-            [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
+            [InlineKeyboardButton("✅ I've Joined — Verify", callback_data="check_joined")]
         ]
         await update.message.reply_text(
             text=banner,
@@ -248,11 +248,11 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
                 f"You must join our official channel to continue using the bot.\n\n"
-                f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
+                f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below and then tap Verify:</i>"
             )
             keyboard = [
                 [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
-                [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
+                [InlineKeyboardButton("✅ I've Joined — Verify", callback_data="check_joined")]
             ]
             await query.edit_message_text(
                 text=banner,
@@ -327,11 +327,11 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 f"<b>ACCESS DENIED</b> <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
                 f"You haven't joined our channel yet! First join the channel to continue.\n\n"
-                f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
+                f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below and then tap Verify:</i>"
             )
             keyboard = [
                 [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
-                [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
+                [InlineKeyboardButton("✅ I've Joined — Verify", callback_data="check_joined")]
             ]
             await query.edit_message_text(
                 text=banner,
@@ -343,7 +343,16 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         # Clear any pending conversational states
         context.user_data.pop('awaiting_product_selection', None)
         context.user_data.pop('awaiting_quantity_for_product', None)
+        context.user_data.pop('awaiting_quantity_duration', None)
         context.user_data.pop('awaiting_optional_email', None)
+        context.user_data.pop('awaiting_review', None)
+        context.user_data.pop('awaiting_manual_deposit', None)
+        
+        # Also mark any lingering AWAITING_EMAIL_ONLY orders as DELIVERED
+        try:
+            supabase.table("orders").update({"delivery_status": "DELIVERED"}).eq("telegram_id", user.id).eq("status", "COMPLETED").eq("delivery_status", "AWAITING_EMAIL_ONLY").execute()
+        except Exception as e:
+            logger.error(f"Error cleaning AWAITING_EMAIL_ONLY on main_menu: {e}")
         
         banner = (
             f"<b>HI</b> 🫲<tg-emoji emoji-id=\"5456258317477230911\">😎</tg-emoji>🫱 <b>{html.escape(user.first_name)}</b>\n"
@@ -1074,11 +1083,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         try:
             if order_id:
                 supabase.table("orders").update({"delivery_status": "DELIVERED"}).eq("id", order_id).execute()
-            else:
-                # Fallback: update any pending AWAITING_EMAIL_ONLY order for this user
-                res = supabase.table("orders").select("id").eq("telegram_id", user.id).eq("status", "COMPLETED").eq("delivery_status", "AWAITING_EMAIL_ONLY").order("created_at", desc=True).limit(1).execute()
-                if res.data:
-                    supabase.table("orders").update({"delivery_status": "DELIVERED"}).eq("id", res.data[0]["id"]).execute()
+            # Also update ALL remaining AWAITING_EMAIL_ONLY orders for this user
+            supabase.table("orders").update({"delivery_status": "DELIVERED"}).eq("telegram_id", user.id).eq("status", "COMPLETED").eq("delivery_status", "AWAITING_EMAIL_ONLY").execute()
         except Exception as e:
             logger.error(f"Error updating write_review email order: {e}")
 
@@ -1101,11 +1107,8 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         try:
             if order_id:
                 supabase.table("orders").update({"delivery_status": "DELIVERED"}).eq("id", order_id).execute()
-            else:
-                # Fallback: update any pending AWAITING_EMAIL_ONLY order for this user
-                res = supabase.table("orders").select("id").eq("telegram_id", user.id).eq("status", "COMPLETED").eq("delivery_status", "AWAITING_EMAIL_ONLY").order("created_at", desc=True).limit(1).execute()
-                if res.data:
-                    supabase.table("orders").update({"delivery_status": "DELIVERED"}).eq("id", res.data[0]["id"]).execute()
+            # Also update ALL remaining AWAITING_EMAIL_ONLY orders for this user
+            supabase.table("orders").update({"delivery_status": "DELIVERED"}).eq("telegram_id", user.id).eq("status", "COMPLETED").eq("delivery_status", "AWAITING_EMAIL_ONLY").execute()
         except Exception as e:
             logger.error(f"Error updating skipped email order: {e}")
 

@@ -48,11 +48,10 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
             f"You must join our official channel to continue using the bot.\n\n"
-            f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below:</i>"
+            f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below and then send /start again:</i>"
         )
         keyboard = [
             [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
-            [InlineKeyboardButton("✅ I've Joined", callback_data="check_joined")]
         ]
         await message.reply_text(
             text=banner,
@@ -130,14 +129,19 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         product_display_name = order_data["product_display_name"]
         qty = len(credentials)
         
-        if not re.match(EMAIL_REGEX, text):
+        # Clean the text: strip whitespace and remove any invisible/special characters
+        clean_email = text.strip().lower()
+        
+        if not re.match(EMAIL_REGEX, clean_email):
             await message.reply_text(
-                f"⚠️ <b>Invalid email!</b> Please type a valid email address (e.g., <code>alex@gmail.com</code>).",
+                f"⚠️ <b>Invalid email!</b> Please type a valid email address (e.g., <code>alex@gmail.com</code>).\n\n"
+                f"Or tap the button below to skip:",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⏭️ Skip — No Email Needed", callback_data="skip_email")]]),
                 parse_mode="HTML"
             )
             return
         
-        email = text.lower()
+        email = clean_email
         context.user_data.pop('awaiting_optional_email', None)
         
         await message.reply_text(f"⏳ <i>Sending credentials to {email}...</i>", parse_mode="HTML")
@@ -154,10 +158,11 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             
             if success:
-                # Update DB with email info
+                # Update DB with email info AND mark as DELIVERED
                 supabase.table("orders").update({
                     "customer_email": email,
-                    "email_sent": True
+                    "email_sent": True,
+                    "delivery_status": "DELIVERED"
                 }).eq("id", order_data["order_id"]).execute()
                 
                 await message.reply_text(
@@ -178,70 +183,76 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # 3. Check database for AWAITING_EMAIL_ONLY (used by Razorpay webhook)
-    try:
-        response = supabase.table("orders").select("*, products(*)").eq("telegram_id", user.id).eq("status", "COMPLETED").eq("delivery_status", "AWAITING_EMAIL_ONLY").order("created_at", desc=True).limit(1).execute()
-        if response.data:
-            order_data = response.data[0]
-            
-            if not re.match(EMAIL_REGEX, text):
-                await message.reply_text(
-                    f"⚠️ <b>Invalid email!</b> Please type a valid email address (e.g., <code>alex@gmail.com</code>).",
-                    parse_mode="HTML"
-                )
-                return
-            
-            email = text.lower()
-            
-            # Update status first so it doesn't trigger again
-            supabase.table("orders").update({
-                "delivery_status": "DELIVERED"
-            }).eq("id", order_data["id"]).execute()
-            
-            await message.reply_text(f"⏳ <i>Sending credentials to {email}...</i>", parse_mode="HTML")
-            
-            try:
-                credentials = order_data.get("delivered_credentials") or []
-                product_name = order_data["products"]["name"]
-                months = order_data.get("subscription_months", 0)
-                duration_text = f" ({months} Months)" if order_data["products"]["category"] in ("OTT", "VideoEditing", "AI") and months > 0 else ""
-                product_display_name = f"{product_name}{duration_text}"
-                qty = order_data.get("quantity", 1)
+    # ONLY check this if the text looks like an email (contains @), skip for reply keyboard text
+    reply_keyboard_texts = ["🛍️ Products", "📝 Purchase History", "↗️ Support", "👛 Wallet"]
+    if text not in reply_keyboard_texts and '@' in text:
+        try:
+            response = supabase.table("orders").select("*, products(*)").eq("telegram_id", user.id).eq("status", "COMPLETED").eq("delivery_status", "AWAITING_EMAIL_ONLY").order("created_at", desc=True).limit(1).execute()
+            if response.data:
+                order_data = response.data[0]
                 
-                usernames = "\n".join([c["email_or_username"] for c in credentials])
-                passwords = "\n".join([c["password"] for c in credentials])
-                
-                success = await send_game_credential_email(
-                    to_email=email,
-                    product_name=f"{product_display_name} (x{qty})",
-                    order_id=order_data["id"],
-                    username=usernames,
-                    password=passwords
-                )
-                
-                if success:
-                    supabase.table("orders").update({
-                        "customer_email": email,
-                        "email_sent": True
-                    }).eq("id", order_data["id"]).execute()
-                    
+                clean_email = text.strip().lower()
+                if not re.match(EMAIL_REGEX, clean_email):
                     await message.reply_text(
-                        f"✅ <b>Credentials sent to {email} successfully!</b>\n\nCheck your inbox (and spam folder).",
+                        f"⚠️ <b>Invalid email!</b> Please type a valid email address (e.g., <code>alex@gmail.com</code>).\n\n"
+                        f"Or tap the button below to skip:",
+                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⏭️ Skip — No Email Needed", callback_data="skip_email")]]),
+                        parse_mode="HTML"
+                    )
+                    return
+                
+                email = clean_email
+                
+                # Update status first so it doesn't trigger again
+                supabase.table("orders").update({
+                    "delivery_status": "DELIVERED"
+                }).eq("id", order_data["id"]).execute()
+                
+                await message.reply_text(f"⏳ <i>Sending credentials to {email}...</i>", parse_mode="HTML")
+                
+                try:
+                    credentials = order_data.get("delivered_credentials") or []
+                    product_name = order_data["products"]["name"]
+                    months = order_data.get("subscription_months", 0)
+                    duration_text = f" ({months} Months)" if order_data["products"]["category"] in ("OTT", "VideoEditing", "AI") and months > 0 else ""
+                    product_display_name = f"{product_name}{duration_text}"
+                    qty = order_data.get("quantity", 1)
+                    
+                    usernames = "\n".join([c["email_or_username"] for c in credentials])
+                    passwords = "\n".join([c["password"] for c in credentials])
+                    
+                    success = await send_game_credential_email(
+                        to_email=email,
+                        product_name=f"{product_display_name} (x{qty})",
+                        order_id=order_data["id"],
+                        username=usernames,
+                        password=passwords
+                    )
+                    
+                    if success:
+                        supabase.table("orders").update({
+                            "customer_email": email,
+                            "email_sent": True
+                        }).eq("id", order_data["id"]).execute()
+                        
+                        await message.reply_text(
+                            f"✅ <b>Credentials sent to {email} successfully!</b>\n\nCheck your inbox (and spam folder).",
+                            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]]),
+                            parse_mode="HTML"
+                        )
+                    else:
+                        raise Exception("Email service returned false")
+                        
+                except Exception as e:
+                    logger.error(f"Error sending email from AWAITING_EMAIL_ONLY: {e}")
+                    await message.reply_text(
+                        f"❌ <b>Error:</b> Could not send email. Please contact support.",
                         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]]),
                         parse_mode="HTML"
                     )
-                else:
-                    raise Exception("Email service returned false")
-                    
-            except Exception as e:
-                logger.error(f"Error sending email from AWAITING_EMAIL_ONLY: {e}")
-                await message.reply_text(
-                    f"❌ <b>Error:</b> Could not send email. Please contact support.",
-                    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]]),
-                    parse_mode="HTML"
-                )
-            return
-    except Exception as e:
-        logger.error(f"Error checking AWAITING_EMAIL_ONLY orders: {e}")
+                return
+        except Exception as e:
+            logger.error(f"Error checking AWAITING_EMAIL_ONLY orders: {e}")
 
     # 3. Look for a completed order that needs credential delivery
     try:

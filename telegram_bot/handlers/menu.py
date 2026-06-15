@@ -716,18 +716,22 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 
             msg += (
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"⚠️ <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
-                f"📧 <b>Want credentials on Email?</b>\n"
-                f"<i>Type your email address in this chat right now to receive them via email, or tap Skip!</i>\n"
+                f"⚠️ <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n"
             )
             
-            keyboard = [
-                [InlineKeyboardButton("⏭️ Skip — No Email Needed", callback_data="skip_email")],
-                [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
-            ]
-            
             try:
-                await query.edit_message_text(text=msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
+                await query.edit_message_text(text=msg, parse_mode="HTML")
+                
+                email_ask_msg = (
+                    f"📧 <b>Want credentials on Email?</b>\n\n"
+                    f"Your credentials are delivered above. If you also want them sent to your email, type your email address below.\n\n"
+                    f"Or tap <b>Skip</b> to continue without email."
+                )
+                keyboard = [
+                    [InlineKeyboardButton("⏭️ Skip — No Email Needed", callback_data="skip_email")],
+                    [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
+                ]
+                await query.message.reply_text(text=email_ask_msg, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
                 
                 # Message sent successfully! Mark as USED
                 for cred in credentials:

@@ -194,19 +194,24 @@ async def process_digital_delivery(order_id: str, payment_id: str, amount: float
                 
             msg += (
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
-                f"⚠️ <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n\n"
-                f"📧 <b>Want credentials on Email?</b>\n"
-                f"<i>Type your email address in this chat right now to receive them via email, or tap Skip!</i>\n"
+                f"⚠️ <i>Please change the credentials after logging in to secure your accounts. Enjoy!</i>\n"
             )
             
-            keyboard = {"inline_keyboard": [[
-                {"text": "⏭️ Skip — No Email Needed", "callback_data": "skip_email"}
-            ], [
-                {"text": "🏠 Main Menu", "callback_data": "main_menu"}
-            ]]}
-            
             # Send message first. If it succeeds, THEN mark as USED!
-            success = await send_telegram_message(telegram_id, msg, reply_markup=keyboard)
+            success = await send_telegram_message(telegram_id, msg)
+            
+            if success:
+                email_ask_msg = (
+                    f"📧 <b>Want credentials on Email?</b>\n\n"
+                    f"Your credentials are delivered above. If you also want them sent to your email, type your email address below.\n\n"
+                    f"Or tap <b>Skip</b> to continue without email."
+                )
+                keyboard = {"inline_keyboard": [[
+                    {"text": "⏭️ Skip — No Email Needed", "callback_data": "skip_email"}
+                ], [
+                    {"text": "🏠 Main Menu", "callback_data": "main_menu"}
+                ]]}
+                await send_telegram_message(telegram_id, email_ask_msg, reply_markup=keyboard)
             
             if success:
                 for cred in credentials:

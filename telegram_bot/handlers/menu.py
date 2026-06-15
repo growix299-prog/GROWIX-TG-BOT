@@ -98,15 +98,15 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
         )
 
-    # Send the bottom reply keyboard first
-    await update.message.reply_text(
-        text="Loading interface...",
-        reply_markup=get_reply_keyboard()
-    )
     try:
-        # Then send the main menu with inline buttons
+        # Send the main menu with inline buttons + reply keyboard
         await update.message.reply_text(
             text=banner,
+            reply_markup=get_reply_keyboard(),
+            parse_mode="HTML"
+        )
+        await update.message.reply_text(
+            text="\u200b",
             reply_markup=get_main_menu_keyboard(),
             parse_mode="HTML"
         )
@@ -306,11 +306,12 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             )
             try:
                 await query.message.reply_text(
-                    text="Loading interface...",
-                    reply_markup=get_reply_keyboard()
-                )
-                await query.edit_message_text(
                     text=banner,
+                    reply_markup=get_reply_keyboard(),
+                    parse_mode="HTML"
+                )
+                await query.message.reply_text(
+                    text="\u200b",
                     reply_markup=get_main_menu_keyboard(),
                     parse_mode="HTML"
                 )
@@ -1172,16 +1173,17 @@ async def handle_chat_member_update(update: Update, context: ContextTypes.DEFAUL
         )
 
         try:
-            # Send reply keyboard
-            await context.bot.send_message(
-                chat_id=user.id,
-                text="✅ Channel joined! Loading interface...",
-                reply_markup=get_reply_keyboard()
-            )
-            # Send main menu
+            # Send banner with reply keyboard
             await context.bot.send_message(
                 chat_id=user.id,
                 text=banner,
+                reply_markup=get_reply_keyboard(),
+                parse_mode="HTML"
+            )
+            # Send main menu inline buttons
+            await context.bot.send_message(
+                chat_id=user.id,
+                text="\u200b",
                 reply_markup=get_main_menu_keyboard(),
                 parse_mode="HTML"
             )

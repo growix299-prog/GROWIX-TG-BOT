@@ -69,11 +69,10 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
             f"Hello <b>{html.escape(user.first_name)}</b>! To unlock our automated instant delivery of gaming credentials and premium OTT services, you must join our official channel.\n\n"
-            f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below and then tap /start again:</i>"
+            f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Join the channel below — you will be verified automatically!</i>"
         )
         keyboard = [
             [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
-            [InlineKeyboardButton("✅ I've Joined — Verify", callback_data="check_joined")]
         ]
         await update.message.reply_text(
             text=banner,
@@ -248,11 +247,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
                 f"You must join our official channel to continue using the bot.\n\n"
-                f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below and then tap Verify:</i>"
+                f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Join the channel below — you will be verified automatically!</i>"
             )
             keyboard = [
                 [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
-                [InlineKeyboardButton("✅ I've Joined — Verify", callback_data="check_joined")]
             ]
             await query.edit_message_text(
                 text=banner,
@@ -327,11 +325,10 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
                 f"<b>ACCESS DENIED</b> <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
                 f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
                 f"You haven't joined our channel yet! First join the channel to continue.\n\n"
-                f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below and then tap Verify:</i>"
+                f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Join the channel below — you will be verified automatically!</i>"
             )
             keyboard = [
                 [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
-                [InlineKeyboardButton("✅ I've Joined — Verify", callback_data="check_joined")]
             ]
             await query.edit_message_text(
                 text=banner,
@@ -1121,3 +1118,72 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             ]),
             parse_mode="HTML"
         )
+
+
+async def handle_chat_member_update(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Handles ChatMemberUpdated events from the required channel.
+    When a user joins @Growixx_store, automatically send them the main menu.
+    This removes the need for an "I've Joined" button.
+    """
+    chat_member = update.chat_member
+    if not chat_member:
+        return
+
+    # Only process updates from our required channel
+    chat = chat_member.chat
+    if chat.username and chat.username.lower() != "growixx_store":
+        return
+
+    new_status = chat_member.new_chat_member.status
+    old_status = chat_member.old_chat_member.status
+    user = chat_member.new_chat_member.user
+
+    # Check if user JUST joined (transitioned from non-member to member)
+    was_member = old_status in ['member', 'administrator', 'creator', 'restricted']
+    is_member = new_status in ['member', 'administrator', 'creator', 'restricted']
+
+    if is_member and not was_member:
+        # User just joined the channel! Send them the main menu
+        logger.info(f"User {user.id} ({user.first_name}) joined @Growixx_store — auto-verifying")
+
+        # Register user if not exists
+        create_user_if_not_exists(
+            telegram_id=user.id,
+            username=user.username,
+            first_name=user.first_name
+        )
+
+        banner = (
+            f"<b>HI</b> 🫲<tg-emoji emoji-id=\"5456258317477230911\">😎</tg-emoji>🫱 <b>{html.escape(user.first_name)}</b>\n"
+            f"<b>WELCOME TO</b> <tg-emoji emoji-id=\"5352625743081775722\">🔘</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"𝐆𝐀𝐌𝐄𝐒 𝐀𝐍𝐃 𝐎𝐓𝐓 𝐁𝐎𝐓 <tg-emoji emoji-id=\"5314391089514291948\">🤖</tg-emoji>\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"<tg-emoji emoji-id=\"5222444124698853913\">🔖</tg-emoji> <b><u>QUICK GUIDE</u> :</b>\n"
+            f"<tg-emoji emoji-id=\"5346105514575025401\">▶️</tg-emoji> 𝚃𝙰𝙿 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃𝚂' 𝙱𝚄𝚃𝚃𝙾𝙽.\n"
+            f"<tg-emoji emoji-id=\"5346105514575025401\">▶️</tg-emoji> 𝚃𝙰𝙿 '𝙾𝚃𝚃' 𝙾𝚁 '𝙶𝙰𝙼𝙴𝚂' 𝚃𝙾 𝙱𝚁𝙾𝚆𝚂𝙴 𝙿𝚁𝙾𝙳𝚄𝙲𝚃𝚂.\n"
+            f"<tg-emoji emoji-id=\"5346105514575025401\">▶️</tg-emoji> 𝙲𝙷𝙾𝙾𝚂𝙴 𝚃𝙷𝙴 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚈𝙾𝚄 𝚆𝙰𝙽𝚃.\n"
+            f"<tg-emoji emoji-id=\"5346105514575025401\">▶️</tg-emoji> 𝙲𝙾𝙼𝙿𝙻𝙴𝚃𝙴 𝚃𝙷𝙴 '𝙿𝙰𝚈𝙼𝙴𝙽𝚃'.\n"
+            f"<tg-emoji emoji-id=\"5346105514575025401\">▶️</tg-emoji> 𝚈𝙾𝚄𝚁 '𝙿𝚁𝙾𝙳𝚄𝙲𝚃' 𝚆𝙸𝙻𝙻 𝙱𝙴 𝙳𝙴𝙻𝙸𝚅𝙴𝚁𝙴𝙳 𝙸𝙽𝚂𝚃𝙰𝙽𝚃𝙻𝚈.\n"
+            f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
+            f"<b>PLEASE CHOOSE A MENU BELOW</b>\n"
+            f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji><tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji>"
+        )
+
+        try:
+            # Send reply keyboard
+            await context.bot.send_message(
+                chat_id=user.id,
+                text="✅ Channel joined! Loading interface...",
+                reply_markup=get_reply_keyboard()
+            )
+            # Send main menu
+            await context.bot.send_message(
+                chat_id=user.id,
+                text=banner,
+                reply_markup=get_main_menu_keyboard(),
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            logger.error(f"Failed to send auto-verify welcome to {user.id}: {e}")

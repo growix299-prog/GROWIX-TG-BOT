@@ -48,7 +48,7 @@ async def handle_user_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"<b>JOIN OUR CHANNEL</b> <tg-emoji emoji-id=\"5456140674028019486\">✅</tg-emoji>\n"
             f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n"
             f"You must join our official channel to continue using the bot.\n\n"
-            f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Please join the channel below and then send /start again:</i>"
+            f"<tg-emoji emoji-id=\"5406745015365943482\">⬇️</tg-emoji> <i>Join the channel below — you will be verified automatically!</i>"
         )
         keyboard = [
             [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],

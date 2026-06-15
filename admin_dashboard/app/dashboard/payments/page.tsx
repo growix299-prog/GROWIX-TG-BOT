@@ -27,6 +27,23 @@ export default function PaymentsPage() {
 
   useEffect(() => {
     fetchPayments()
+
+    // Subscribe to real-time changes
+    const channel = supabase
+      .channel('payments-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'payments' },
+        (payload) => {
+          console.log('Payment realtime change:', payload)
+          fetchPayments()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   const handleDeletePayment = async (paymentId: string) => {

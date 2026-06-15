@@ -155,7 +155,9 @@ export default function OrdersPage() {
             <option value="PENDING">Pending</option>
             <option value="DELIVERED">Delivered</option>
             <option value="MANUAL_PROCESSING">Manual Processing</option>
-            <option value="AWAITING_EMAIL_GAMES">Awaiting Email</option>
+            <option value="AWAITING_EMAIL_GAMES">Awaiting Email (Games)</option>
+            <option value="AWAITING_EMAIL_ONLY">Awaiting Email Only</option>
+            <option value="FAILED_DELIVERY">Failed Delivery</option>
           </select>
         </div>
 
@@ -251,10 +253,14 @@ export default function OrdersPage() {
                           order.delivery_status === 'DELIVERED' ? 'bg-yellow-950 text-yellow-400 border border-yellow-500/20' :
                           order.delivery_status === 'MANUAL_PROCESSING' ? 'bg-purple-950 text-purple-400 border border-purple-500/20 animate-pulse' :
                           order.delivery_status === 'AWAITING_EMAIL_GAMES' ? 'bg-orange-950 text-orange-400 border border-orange-500/20 animate-pulse' :
+                          order.delivery_status === 'AWAITING_EMAIL_ONLY' ? 'bg-cyan-950 text-cyan-400 border border-cyan-500/20 animate-pulse' :
+                          order.delivery_status === 'FAILED_DELIVERY' ? 'bg-red-950 text-red-400 border border-red-500/20' :
                           'bg-yellow-950 text-yellow-500 border border-yellow-500/20'
                         }`}>
                           {order.delivery_status === 'AWAITING_EMAIL_GAMES' ? 'AWAITING EMAIL' : 
+                           order.delivery_status === 'AWAITING_EMAIL_ONLY' ? 'EMAIL PENDING' :
                            order.delivery_status === 'MANUAL_PROCESSING' ? 'MANUAL PROCESSING' : 
+                           order.delivery_status === 'FAILED_DELIVERY' ? 'FAILED' :
                            order.delivery_status}
                         </span>
                       </td>

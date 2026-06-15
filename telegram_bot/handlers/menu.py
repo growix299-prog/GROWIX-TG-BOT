@@ -73,6 +73,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         keyboard = [
             [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
+            [InlineKeyboardButton("✅ I Have Joined", callback_data="check_joined")]
         ]
         await update.message.reply_text(
             text=banner,
@@ -101,12 +102,11 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # Send the main menu with inline buttons + reply keyboard
         await update.message.reply_text(
-            text=banner,
-            reply_markup=get_reply_keyboard(),
-            parse_mode="HTML"
+            text="🔄 Menu updated! Please use the buttons below:",
+            reply_markup=get_reply_keyboard()
         )
         await update.message.reply_text(
-            text="\u200b",
+            text=banner,
             reply_markup=get_main_menu_keyboard(),
             parse_mode="HTML"
         )
@@ -251,6 +251,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             )
             keyboard = [
                 [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
+                [InlineKeyboardButton("✅ I Have Joined", callback_data="check_joined")]
             ]
             await query.edit_message_text(
                 text=banner,
@@ -306,12 +307,11 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             )
             try:
                 await query.message.reply_text(
-                    text=banner,
-                    reply_markup=get_reply_keyboard(),
-                    parse_mode="HTML"
+                    text="🔄 Menu updated! Please use the buttons below:",
+                    reply_markup=get_reply_keyboard()
                 )
                 await query.message.reply_text(
-                    text="\u200b",
+                    text=banner,
                     reply_markup=get_main_menu_keyboard(),
                     parse_mode="HTML"
                 )
@@ -330,6 +330,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             )
             keyboard = [
                 [InlineKeyboardButton("🚀 Join Channel 🚀", url="https://t.me/Growixx_store")],
+                [InlineKeyboardButton("✅ I Have Joined", callback_data="check_joined")]
             ]
             await query.edit_message_text(
                 text=banner,

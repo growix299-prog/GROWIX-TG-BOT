@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabaseClient'
 import { Search, RefreshCw, Trash2, Eye, Plus, RotateCcw, X, Users, Wallet, ShoppingCart, ArrowDownCircle } from 'lucide-react'
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://nexautomate.onrender.com'
-const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_API_KEY || 'nexus_admin_secret_key_2026_ultra_secure'
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://nexautomate-unified.onrender.com'
+const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_API_KEY || ''
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([])

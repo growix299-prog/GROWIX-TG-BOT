@@ -55,7 +55,7 @@ app.add_middleware(
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip() if os.getenv("BOT_TOKEN") else None
 RAZORPAY_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "").strip() if os.getenv("RAZORPAY_WEBHOOK_SECRET") else None
-ADMIN_API_SECRET = os.getenv("ADMIN_API_SECRET", "nexus_admin_secret_key_2026_ultra_secure")
+ADMIN_API_SECRET = os.getenv("ADMIN_API_SECRET", "")
 
 # Admin Telegram ID to notify on successful sales
 ADMIN_TELEGRAM_ID = os.getenv("ADMIN_TELEGRAM_ID")
@@ -653,7 +653,11 @@ async def admin_broadcast_stock(
     # 4. Build the broadcast message
     product_name = product["name"]
     category = product["category"]
-    price = float(product["price"])
+    
+    if category in ("OTT", "VideoEditing", "AI"):
+        price = float(product.get("price_1m") or 0.0)
+    else:
+        price = float(product.get("price") or 0.0)
     
     from telegram_bot.handlers.menu import get_product_emoji
     emoji = get_product_emoji(product_name)

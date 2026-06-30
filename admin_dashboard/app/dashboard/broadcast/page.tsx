@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabaseClient'
 import { Megaphone, Send, Package, Users, AlertCircle, CheckCircle2, Loader2, Eye, Sparkles } from 'lucide-react'
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://nexautomate.onrender.com'
-const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_API_KEY || 'nexus_admin_secret_key_2026_ultra_secure'
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://nexautomate-unified.onrender.com'
+const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_API_KEY || ''
 
 // Product emoji helper (mirrors backend)
 function getProductEmoji(name: string) {

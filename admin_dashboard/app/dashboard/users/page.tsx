@@ -128,9 +128,18 @@ export default function UsersPage() {
           amount: amt,
           description: actionDesc || `Admin credit of ₹${amt.toFixed(2)}`
         })
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.detail || 'Failed to add funds')
+      }).catch(err => {
+        throw new Error(`CORS/Network Error connecting to ${API_BASE}. Details: ${err.message}. Open F12 Console.`);
+      });
+      
+      let data;
+      try {
+        data = await res.json()
+      } catch (parseErr) {
+        throw new Error(`Server returned non-JSON response (Status ${res.status}). It might be an HTML error page.`);
+      }
+
+      if (!res.ok) throw new Error(data.detail || `Server Error ${res.status}: Failed to add funds`)
       
       setActionModal({type: null, user: null})
       setActionAmount('')

@@ -111,9 +111,16 @@ export default function BroadcastPage() {
           stock_added: stockAdded,
           custom_message: customMessage || undefined
         })
-      })
+      }).catch(err => {
+        throw new Error(`CORS/Network Error connecting to ${API_BASE}. Details: ${err.message}. Open F12 Console to see the exact root cause.`);
+      });
 
-      const data = await res.json()
+      let data;
+      try {
+        data = await res.json()
+      } catch (parseErr) {
+        throw new Error(`Server returned non-JSON response (Status ${res.status}). It might be an HTML error page. Check backend logs.`);
+      }
 
       if (res.ok) {
         setResult({
@@ -124,10 +131,10 @@ export default function BroadcastPage() {
         setCustomMessage('')
         setShowPreview(false)
       } else {
-        setResult({ type: 'error', text: data.detail || 'Failed to send broadcast' })
+        setResult({ type: 'error', text: data.detail || `Server Error ${res.status}: Failed to send broadcast` })
       }
     } catch (err: any) {
-      setResult({ type: 'error', text: err.message || 'Network error' })
+      setResult({ type: 'error', text: err.message || 'Unknown network error' })
     } finally {
       setSending(false)
     }

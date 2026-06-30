@@ -202,7 +202,7 @@ export default function BroadcastPage() {
                 >
                   {products.map((prod) => (
                     <option key={prod.id} value={prod.id}>
-                      {getProductEmoji(prod.name)} {prod.name} ({prod.category}) — ₹{parseFloat(prod.price).toFixed(2)}
+                      {getProductEmoji(prod.name)} {prod.name} ({prod.category}) — ₹{(prod.category === 'OTT' || prod.category === 'VideoEditing' || prod.category === 'AI') ? parseFloat(prod.price_1m || 0).toFixed(2) : parseFloat(prod.price).toFixed(2)}
                     </option>
                   ))}
                 </select>
@@ -221,7 +221,7 @@ export default function BroadcastPage() {
                 </div>
                 <div className="p-3 bg-cyber-bg/70 border border-cyber-border/40 rounded-lg text-center">
                   <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Price</p>
-                  <p className="text-xl font-black text-yellow-400 mt-1">₹{parseFloat(selectedProduct.price).toFixed(2)}</p>
+                  <p className="text-xl font-black text-yellow-400 mt-1">₹{(selectedProduct.category === 'OTT' || selectedProduct.category === 'VideoEditing' || selectedProduct.category === 'AI') ? parseFloat(selectedProduct.price_1m || 0).toFixed(2) : parseFloat(selectedProduct.price).toFixed(2)}</p>
                   <p className="text-[10px] text-gray-600 mt-0.5">{selectedProduct.category}</p>
                 </div>
               </div>
@@ -304,7 +304,7 @@ export default function BroadcastPage() {
                 <div className="space-y-1.5 text-[13px]">
                   <p>{getProductEmoji(selectedProduct.name)} <b>Product:</b> {selectedProduct.name}</p>
                   <p>🗂️ <b>Category:</b> {selectedProduct.category}</p>
-                  <p>💰 <b>Price:</b> ₹{parseFloat(selectedProduct.price).toFixed(2)}</p>
+                  <p>💰 <b>Price:</b> ₹{(selectedProduct.category === 'OTT' || selectedProduct.category === 'VideoEditing' || selectedProduct.category === 'AI') ? parseFloat(selectedProduct.price_1m || 0).toFixed(2) : parseFloat(selectedProduct.price).toFixed(2)}</p>
                 </div>
                 <div className="space-y-1.5 text-[13px] pt-1">
                   <p>📦 <b>Stock Added:</b> {stockAdded} accounts</p>

@@ -1,34 +1,16 @@
 services:
-  # 1. TELEGRAM BOT SERVICE
+  # UNIFIED SERVICE (FastAPI + Telegram Bot) - Saves 50% Render Free Hours!
   - type: web
-    name: tg-bot-main
+    name: nexautomate-unified
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python telegram_bot/main.py
+    startCommand: chmod +x start.sh && ./start.sh
     envVars:
       - key: SUPABASE_URL
         value: https://ogbdzspgfmctczgtasok.supabase.co
       - key: SUPABASE_SERVICE_ROLE
         sync: false
-      - key: BOT_TOKEN
-        sync: false
-      - key: RAZORPAY_KEY_ID
-        sync: false
-      - key: RAZORPAY_KEY_SECRET
-        sync: false
-      - key: RESEND_API_KEY
-        sync: false
-
-  # 2. FASTAPI BACKEND SERVICE (RAZORPAY WEBHOOKS & ADMIN API)
-  - type: web
-    name: tg-bot-backend
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: SUPABASE_URL
-        value: https://ogbdzspgfmctczgtasok.supabase.co
-      - key: SUPABASE_SERVICE_ROLE
+      - key: SUPABASE_KEY
         sync: false
       - key: BOT_TOKEN
         sync: false

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabaseClient'
 import { Search, RefreshCw, Trash2, Eye, Plus, RotateCcw, X, Users, Wallet, ShoppingCart, ArrowDownCircle } from 'lucide-react'
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://nexautomate-unified.onrender.com'
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://nexatutomate.onrender.com'
 const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_API_KEY || ''
 
 export default function UsersPage() {

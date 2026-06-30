@@ -1,0 +1,66 @@
+# ===========================
+# ENVIRONMENT & SECRETS
+# ===========================
+.env
+.env.local
+.env.production
+.env.staging
+.env.*.local
+
+# ===========================
+# PYTHON
+# ===========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# ===========================
+# NODE.JS / NEXT.JS
+# ===========================
+node_modules/
+.next/
+out/
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+package-lock.json
+
+# ===========================
+# IDE & OS FILES
+# ===========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===========================
+# LOGS & TEMP
+# ===========================
+*.log
+logs/
+tmp/
+temp/
+
+# ===========================
+# MISC
+# ===========================
+*.sqlite3
+*.db
+.cache/
+
+admin_dashboard/app/dashboard/bot_video.mp4

@@ -80,8 +80,13 @@ def main():
 
     logger.info("Initializing Telegram Digital Delivery Bot...")
     
-    # Initialize python-telegram-bot application
-    application = Application.builder().token(BOT_TOKEN).post_init(setup_commands).build()
+    from telegram.request import HTTPXRequest
+    
+    # Custom request with longer timeout to fix Hugging Face connection issues
+    req = HTTPXRequest(connection_pool_size=8, connect_timeout=30.0, read_timeout=30.0)
+    
+    # Initialize python-telegram-bot application with custom request
+    application = Application.builder().token(BOT_TOKEN).request(req).get_updates_request(req).post_init(setup_commands).build()
 
     # Register handlers
     application.add_handler(CommandHandler("start", start_command))

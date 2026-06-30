@@ -1,3 +1,12 @@
+---
+title: NexAutomate TG Bot
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # Telegram Digital Delivery System (TG BOT) - Operations Manual
 
 Welcome to the **Digital Delivery System Command Center**. This project is a complete production-ready automation linking a **Python Telegram Bot**, an **async FastAPI Backend**, and a **Next.js Admin Dashboard** via a central **Supabase PostgreSQL** database.

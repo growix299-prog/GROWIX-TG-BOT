@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabaseClient'
 import { Megaphone, Send, Package, Users, AlertCircle, CheckCircle2, Loader2, Eye, Sparkles } from 'lucide-react'
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://nexatutomate.onrender.com'
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://growix-tg-bot.onrender.com'
 const ADMIN_KEY = process.env.NEXT_PUBLIC_ADMIN_API_KEY || ''
 
 // Product emoji helper (mirrors backend)
